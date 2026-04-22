@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# Vesta config (synced locally, not tracked in git)
+Vesta/
