@@ -110,14 +110,14 @@ Send all N messages? (yes / edit)
 Message template per person:
 
 ```
-<@SLACK_ID> — These tickets are ready for testing:
+<@SLACK_ID> — This ticket is ready for testing: (use "These tickets are ready for testing:" if there are multiple tickets)
 
 • *TICKET_ID* — [Ticket Title] https://horizonpennymac.atlassian.net/browse/TICKET_ID
-  Config Version: `SJ-TICKET_ID-01`
-  Notes: <testing note, or omit this line if none>
+• Config Version: `SJ-TICKET_ID-01`
+• Notes: <testing note, or omit this line if none>
 
 • *TICKET_ID2* — [Ticket Title2] https://horizonpennymac.atlassian.net/browse/TICKET_ID2
-  Config Version: `SJ-TICKET_ID2-01`
+• Config Version: `SJ-TICKET_ID2-01`
 
 ```
 
