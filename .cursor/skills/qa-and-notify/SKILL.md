@@ -36,7 +36,21 @@ Note: current status, summary, and assignee.
 
 ---
 
-## Step 3: Plan the Transition Path
+## Step 3: Assign Ticket to Offshore User on Jira
+
+Before transitioning, assign the ticket to the offshore assignee on Jira:
+
+1. Look up the offshore assignee's Jira account ID using `lookupJiraAccountId`
+2. Assign the ticket using `editJiraIssue` with the assignee field
+
+```
+lookupJiraAccountId(cloudId="horizonpennymac.atlassian.net", searchString="[Name]")
+editJiraIssue(cloudId="horizonpennymac.atlassian.net", issueIdOrKey="HIS-XXXX", fields={"assignee": {"accountId": "..."}})
+```
+
+---
+
+## Step 4: Plan the Transition Path
 
 | Current Status | Path                                                     |
 | -------------- | -------------------------------------------------------- |
@@ -49,7 +63,7 @@ Discover transition IDs from the `transitions` array in the response — **never
 
 ---
 
-## Step 4: Confirm Before Doing Anything
+## Step 5: Confirm Before Doing Anything
 
 Show a single combined summary before taking any action:
 
@@ -59,6 +73,7 @@ Show a single combined summary before taking any action:
 Ticket: HIS-XXXX — [Summary]
 Current Status: [Status]
 Transition Path: [e.g. Dev → QA]
+Jira Assignee: Will assign to [Name]
 
 Offshore Assignee: [Name]
 Config Version: SJ-HIS-XXXX-01
@@ -72,7 +87,7 @@ Wait for confirmation before executing anything.
 
 ---
 
-## Step 5: Transition to QA
+## Step 6: Transition to QA
 
 Execute each step in the transition path sequentially via `transitionJiraIssue`. Confirm each step succeeds before proceeding to the next.
 
@@ -80,7 +95,7 @@ If a required-field error occurs, ask the user for the value and retry.
 
 ---
 
-## Step 6: Compose Slack Message
+## Step 7: Compose Slack Message
 
 Use the offshore team roster:
 
@@ -132,7 +147,7 @@ Rules:
 
 ---
 
-## Step 7: Send Slack Message
+## Step 8: Send Slack Message
 
 After approval:
 
@@ -142,12 +157,12 @@ slack_send_message(channel_id = "C093GGD044R", message = "<composed message>")
 
 ---
 
-## Step 8: Final Report
+## Step 9: Final Report
 
 ```
 ✅ Done — HIS-XXXX
 
-  Jira: Transitioned to QA
+  Jira: Assigned to [Name] and transitioned to QA
   Slack: Notification sent to [Name] in #team-eligibles-offshore-onshore
   Link: https://horizonpennymac.atlassian.net/browse/HIS-XXXX
   Message: [Slack message link]
@@ -157,8 +172,10 @@ slack_send_message(channel_id = "C093GGD044R", message = "<composed message>")
 
 ## Rules
 
+- **Always assign** the ticket to the offshore user on Jira before transitioning
 - **Never modify** parent tickets, Epics, or sibling tickets — read-only
 - **Never fetch** tickets other than the one explicitly provided
 - **Always preview** the Slack message before sending
 - One Slack message per offshore assignee
 - Config version must be present — infer from Jira description or ask
+- The offshore assignee specified is used for both Jira assignment and Slack notification
