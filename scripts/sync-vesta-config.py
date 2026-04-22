@@ -145,10 +145,11 @@ def fetch_objective(obj_id: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def _task_header(task: dict, extra_lines: list[str]) -> list[str]:
-    """Common opening block shared by every task type."""
+    """Common opening block shared by every task type (and automated actions)."""
     name = task["name"]
     ext_id = task.get("externalIdentifier", "")
-    last_mod = (task.get("lastModifiedAt") or "")[:10]
+    # Tasks use lastModifiedAt; automated actions use lastUpdated.
+    last_mod = (task.get("lastModifiedAt") or task.get("lastUpdated") or "")[:10]
     last_by = task.get("lastModifiedBy", "")
 
     lines = [f"# {name}", ""]
@@ -335,6 +336,45 @@ def write_unknown_task(task: dict, path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_automated_action_file(action: dict, path: Path) -> None:
+    """Write a single automated action .md file."""
+    entity = action.get("entityType", "")
+    action_type = action.get("actionType", "")
+    package_name = action.get("packageName", "")
+    std_package = action.get("standardPackageType", "")
+    sent_to_borrowers = action.get("isSentToBorrowers")
+    request_type = action.get("requestType", "")
+
+    first_line = f"**Type**: AutomatedAction | **Entity**: {entity}"
+    if action_type:
+        first_line += f" | **Action Type**: {action_type}"
+    parts = [first_line]
+
+    if package_name:
+        pkg = package_name
+        if std_package and std_package != package_name and std_package != "Undefined":
+            pkg += f" ({std_package})"
+        parts.append(f"**Package**: {pkg}")
+    if sent_to_borrowers is not None:
+        parts.append(f"**Sent to Borrowers**: {'yes' if sent_to_borrowers else 'no'}")
+    if request_type and request_type != "Undefined":
+        parts.append(f"**Request Type**: {request_type}")
+
+    lines = _task_header(action, parts)
+
+    ready_groups = action.get("readinessConditionGroups", [])
+    lines += ["## Readiness (Execution Conditions)", "", render_condition_groups(ready_groups), ""]
+
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_automated_action_slug(action: dict, tasks_dir: Path) -> str:
+    """Write an automated action .md file and return its slug."""
+    slug = to_kebab(action["name"])
+    write_automated_action_file(action, tasks_dir / f"{slug}.md")
+    return slug
+
+
 TASK_WRITERS = {
     "Instructions": write_instructions_task,
     "DocumentProcessing": write_document_processing_task,
@@ -365,7 +405,12 @@ def write_task_file(task: dict, tasks_dir: Path, all_tasks_map: dict) -> str:
 # Objective README
 # ---------------------------------------------------------------------------
 
-def write_objective_readme(data: dict, obj_dir: Path, task_rows: list[tuple]) -> None:
+def write_objective_readme(
+    data: dict,
+    obj_dir: Path,
+    task_rows: list[tuple],
+    automated_action_rows: Optional[list[tuple]] = None,
+) -> None:
     name = data["name"]
     ext_id = data.get("externalIdentifier", "")
     entity = data.get("entityType", "")
@@ -498,6 +543,19 @@ def write_objective_readme(data: dict, obj_dir: Path, task_rows: list[tuple]) ->
         lines.append("_No tasks configured_")
     lines.append("")
 
+    # Automated Actions
+    lines += ["## Automated Actions", ""]
+    if automated_action_rows:
+        lines += [
+            "| Automated Action | Entity | Action Type |",
+            "|------------------|--------|-------------|",
+        ]
+        for a_name, a_entity, a_type, a_slug in automated_action_rows:
+            lines.append(f"| [{a_name}](tasks/{a_slug}.md) | {a_entity} | {a_type} |")
+    else:
+        lines.append("_No automated actions configured_")
+    lines.append("")
+
     # Validations
     lines += ["## Linked Validations", ""]
     if validations:
@@ -618,6 +676,7 @@ def sync_details(list_items: list, force: bool = False) -> None:
     """
     total = len(list_items)
     total_tasks = 0
+    total_automated_actions = 0
     total_validations = 0
     total_skipped = 0
     detail_synced_slugs: set[str] = set()
@@ -663,11 +722,22 @@ def sync_details(list_items: list, force: bool = False) -> None:
             task_rows.append((task["name"], t_type, t_entity, t_trigger, t_auto, t_ai, t_slug))
             total_tasks += 1
 
-        write_objective_readme(data, obj_dir, task_rows)
+        automated_action_rows = []
+        for action in data.get("automatedActionTemplates", []):
+            a_slug = write_automated_action_slug(action, tasks_dir)
+            a_entity = action.get("entityType", "")
+            a_type = action.get("actionType", "")
+            automated_action_rows.append((action["name"], a_entity, a_type, a_slug))
+            total_automated_actions += 1
+
+        write_objective_readme(data, obj_dir, task_rows, automated_action_rows)
         total_validations += len(data.get("validationConfigurations", []))
         detail_synced_slugs.add(slug)
 
-        print(f"  -> {len(task_rows)} task(s) written to {obj_dir.relative_to(WORKSPACE_ROOT)}")
+        print(
+            f"  -> {len(task_rows)} task(s), {len(automated_action_rows)} automated action(s)"
+            f" written to {obj_dir.relative_to(WORKSPACE_ROOT)}"
+        )
 
         # Sequential-only: wait before the next detail call (skip delay after the last item).
         # Only delay after a real fetch — skipped objectives don't count.
@@ -686,6 +756,7 @@ def sync_details(list_items: list, force: bool = False) -> None:
     print(f"  Objectives fetched           : {fetched}")
     print(f"  Objectives skipped           : {total_skipped}")
     print(f"  Total tasks written          : {total_tasks}")
+    print(f"  Total automated actions      : {total_automated_actions}")
     print(f"  Total validations            : {total_validations}")
     print(f"  Index                        : Vesta/config/objectives/index.md")
 

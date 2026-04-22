@@ -3,7 +3,8 @@ name: sync-vesta-config
 description: >
   Syncs the Vesta configuration knowledge base. Phase 1 (fast): calls the objective-list
   endpoint, refreshes objectives-list.json with all 180+ objectives, and rebuilds index.md.
-  Phase 2 (deep): calls get-config per objective to write README.md + task files.
+  Phase 2 (deep): calls get-config per objective to write README.md + task files +
+  automated action files (automatedActionTemplates).
   Use when the user says "sync Vesta config", "refresh objectives", "update the index",
   "update knowledge base", "sync objective details", or "get details for objective {name}".
 ---
@@ -80,8 +81,12 @@ When the user wants detail files for just one objective by name:
    for t in obj.get('taskTemplates', []):
        s = mod.write_task_file(t, tasks_dir, all_tasks_map)
        rows.append((t['name'], t['taskTemplateType'], t.get('entityType',''), t.get('triggerMethod',''), '—', '—', s))
-   mod.write_objective_readme(obj, obj_dir, rows)
-   print(f'Done: {obj[\"name\"]} — {len(rows)} tasks')
+   auto_rows = []
+   for a in obj.get('automatedActionTemplates', []):
+       s = mod.write_automated_action_slug(a, tasks_dir)
+       auto_rows.append((a['name'], a.get('entityType',''), a.get('actionType',''), s))
+   mod.write_objective_readme(obj, obj_dir, rows, auto_rows)
+   print(f'Done: {obj[\"name\"]} — {len(rows)} task(s), {len(auto_rows)} automated action(s)')
    "
    ```
 
@@ -110,9 +115,10 @@ scripts/
 Vesta/objectives/
   index.md                    ← master table (180 rows, from list endpoint only)
   {objective-slug}/           ← only exists for detail-synced objectives
-    README.md                 ← relevance, readiness, tasks, validations
+    README.md                 ← relevance, readiness, tasks, automated actions, validations
     tasks/
       {task-slug}.md          ← type-specific task detail + relevance logic
+      {action-slug}.md        ← AutomatedAction: runs automatically, has actionType + execution conditions
 ```
 
 ## Notes
