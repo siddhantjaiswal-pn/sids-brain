@@ -9,7 +9,7 @@ Two-phase sync for the Vesta configuration knowledge base:
       and writes Vesta/objectives/index.md.
 
   Phase 2 — Detail sync (optional, per objective):
-      Calls get-config for each objective sequentially (never in parallel),
+      Calls get-objective for each objective sequentially (never in parallel),
       with a 4-second delay between calls, and writes README.md + task .md files.
 
 Usage:
@@ -134,8 +134,8 @@ def fetch_objective_list(process_version_uuid: str) -> list[dict]:
 
 
 def fetch_objective(obj_id: str) -> dict:
-    """Call the get-config endpoint for a single objective (full detail)."""
-    url = f"{BASE_URL}/adhoc/get-config?objectiveId={obj_id}"
+    """Call the get-objective endpoint for a single objective (full detail)."""
+    url = f"{BASE_URL}/adhoc/get-objective?objectiveId={obj_id}"
     with urllib.request.urlopen(url, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -661,7 +661,7 @@ def sync_index(process_version_uuid: str) -> list:
 
 def sync_details(list_items: list, force: bool = False) -> None:
     """
-    Phase 2: For each objective, call get-config sequentially and write
+    Phase 2: For each objective, call get-objective sequentially and write
     README.md + task .md files.
 
     IMPORTANT: All API calls are strictly sequential — never parallel.

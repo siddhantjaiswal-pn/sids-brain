@@ -3,10 +3,13 @@ name: sync-vesta-config
 description: >
   Syncs the Vesta configuration knowledge base. Phase 1 (fast): calls the objective-list
   endpoint, refreshes objectives-list.json with all 180+ objectives, and rebuilds index.md.
-  Phase 2 (deep): calls get-config per objective to write README.md + task files +
-  automated action files (automatedActionTemplates).
+  Phase 2 (deep): calls get-objective per objective to write README.md + task files +
+  automated action files (automatedActionTemplates). Also handles fetching objectives from
+  specific process versions by first getting the objectives list, finding the UUID, then
+  fetching details.
   Use when the user says "sync Vesta config", "refresh objectives", "update the index",
-  "update knowledge base", "sync objective details", or "get details for objective {name}".
+  "update knowledge base", "sync objective details", "get details for objective {name}",
+  or "get {objective} from process version {uuid}".
 ---
 
 # Sync Vesta Config Knowledge Base
@@ -17,7 +20,7 @@ Two-phase sync for the Vesta objective configuration knowledge base.
 `objectives-list.json` with all current objectives, and rebuilds `Vesta/objectives/index.md`.
 UUIDs are discovered automatically — no manual ID management needed.
 
-**Phase 2 — Detail sync** (slow, minutes): Calls `get-config` per objective and writes
+**Phase 2 — Detail sync** (slow, minutes): Calls `get-objective` per objective and writes
 full `README.md` + individual task `.md` files.
 
 ## Trigger Phrases → Workflow
@@ -27,6 +30,7 @@ full `README.md` + individual task `.md` files.
 | "refresh index", "update index", "sync index" | [Phase 1 Only](#phase-1--index-sync) |
 | "sync all", "full sync", "sync Vesta config" | [Phase 1 + Phase 2](#phase-1--2-full-sync) |
 | "sync objective {name}" | [Single Objective Detail](#single-objective-detail) |
+| "get {objective name} from process version {uuid}" | [Objective from Specific Process Version](#objective-from-specific-process-version) |
 | "what's the process version UUID?" | Read `scripts/sync-vesta-config.py` and show `PROCESS_VERSION_UUID` |
 | "update process version UUID to {uuid}" | [Update Process Version UUID](#update-process-version-uuid) |
 
@@ -92,6 +96,107 @@ When the user wants detail files for just one objective by name:
 
    > **Note**: `importlib.util` is required — `sys.path.insert` fails because
    > `sync-vesta-config.py` uses hyphens and cannot be imported as a Python module.
+
+---
+
+## Objective from Specific Process Version
+
+**CRITICAL**: When the user provides a process version UUID and wants objective details, you **MUST** follow this exact 3-step workflow:
+
+### Step 1: Fetch objectives list from the process version
+
+```bash
+cd "/Users/sijaiswal/Sids Brain" && python3 -c "
+import json
+import urllib.request
+
+PROCESS_VERSION_UUID = '{process_version_uuid}'
+BASE_URL = 'http://localhost:3001'
+
+url = f'{BASE_URL}/adhoc/objective-list?processVersionUUID={PROCESS_VERSION_UUID}'
+print(f'Fetching objectives from process version: {PROCESS_VERSION_UUID}')
+print()
+
+with urllib.request.urlopen(url, timeout=30) as resp:
+    objectives = json.loads(resp.read().decode('utf-8'))
+
+print(f'Total objectives found: {len(objectives)}')
+print()
+
+# Find the requested objective by name
+search_term = '{objective_name}'.lower()
+for obj in objectives:
+    if search_term in obj['name'].lower():
+        print(f\"Name: {obj['name']}\")
+        print(f\"UUID: {obj['id']}\")
+        print(f\"External ID: {obj.get('externalIdentifier', 'N/A')}\")
+        print()
+"
+```
+
+Replace `{process_version_uuid}` with the provided process version UUID and `{objective_name}` with the objective name to search for.
+
+### Step 2: Extract the UUID from Step 1 output
+
+From the output above, identify the correct UUID for the objective.
+
+### Step 3: Fetch objective details using the UUID
+
+```bash
+cd "/Users/sijaiswal/Sids Brain" && python3 -c "
+import importlib.util
+
+spec = importlib.util.spec_from_file_location('sync_vesta_config', 'scripts/sync-vesta-config.py')
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+
+# Fetch the objective using the UUID from Step 2
+obj = mod.fetch_objective('{uuid_from_step_2}')
+
+ext_id = obj.get('externalIdentifier') or mod.to_kebab(obj['name'])
+slug = mod.to_kebab(ext_id)
+print(f'Objective: {obj[\"name\"]}')
+print(f'Slug: {slug}')
+print(f'UUID: {obj[\"id\"]}')
+print(f'External ID: {obj.get(\"externalIdentifier\", \"N/A\")}')
+print(f'Tasks: {len(obj.get(\"taskTemplates\", []))}')
+print(f'Automated Actions: {len(obj.get(\"automatedActionTemplates\", []))}')
+print()
+
+obj_dir = mod.OBJECTIVES_DIR / slug
+tasks_dir = obj_dir / 'tasks'
+obj_dir.mkdir(parents=True, exist_ok=True)
+tasks_dir.mkdir(parents=True, exist_ok=True)
+
+all_tasks_map = {t['id']: t for t in obj.get('taskTemplates', [])}
+rows = []
+for t in obj.get('taskTemplates', []):
+    s = mod.write_task_file(t, tasks_dir, all_tasks_map)
+    rows.append((t['name'], t['taskTemplateType'], t.get('entityType',''), t.get('triggerMethod',''), '—', '—', s))
+
+auto_rows = []
+for a in obj.get('automatedActionTemplates', []):
+    s = mod.write_automated_action_slug(a, tasks_dir)
+    auto_rows.append((a['name'], a.get('entityType',''), a.get('actionType',''), s))
+
+mod.write_objective_readme(obj, obj_dir, rows, auto_rows)
+
+print(f'Done: {obj[\"name\"]} — {len(rows)} task(s), {len(auto_rows)} automated action(s)')
+print(f'Files written to: {obj_dir}')
+"
+```
+
+Replace `{uuid_from_step_2}` with the UUID extracted from Step 2.
+
+### Why This Workflow?
+
+Each process version has its own set of objective UUIDs. You **cannot** use a UUID from `objectives-list.json` (which is tied to the default process version) when querying a different process version. You must:
+
+1. ✅ First get the objectives list from the specific process version
+2. ✅ Find the correct UUID for that objective in that version
+3. ✅ Then fetch the objective details
+
+**DO NOT** skip Step 1 and go directly to fetching objective details with a cached UUID.
 
 ---
 
