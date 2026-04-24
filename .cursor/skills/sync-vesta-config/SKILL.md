@@ -5,11 +5,11 @@ description: >
   endpoint, refreshes objectives-list.json with all 180+ objectives, and rebuilds index.md.
   Phase 2 (deep): calls get-objective per objective to write README.md + task files +
   automated action files (automatedActionTemplates). Also handles fetching objectives from
-  specific process versions by first getting the objectives list, finding the UUID, then
-  fetching details.
+  specific process versions by name or UUID — uses the config-list endpoint to resolve
+  process version names to UUIDs, then fetches the objectives list and details.
   Use when the user says "sync Vesta config", "refresh objectives", "update the index",
   "update knowledge base", "sync objective details", "get details for objective {name}",
-  or "get {objective} from process version {uuid}".
+  "get {objective} from process version {uuid}", or "get {objective} from process version {name}".
 ---
 
 # Sync Vesta Config Knowledge Base
@@ -31,6 +31,7 @@ full `README.md` + individual task `.md` files.
 | "sync all", "full sync", "sync Vesta config" | [Phase 1 + Phase 2](#phase-1--2-full-sync) |
 | "sync objective {name}" | [Single Objective Detail](#single-objective-detail) |
 | "get {objective name} from process version {uuid}" | [Objective from Specific Process Version](#objective-from-specific-process-version) |
+| "get {objective name} from process version {name}" | [Resolve Process Version Name to UUID](#resolve-process-version-name-to-uuid) → [Objective from Specific Process Version](#objective-from-specific-process-version) |
 | "what's the process version UUID?" | Read `scripts/sync-vesta-config.py` and show `PROCESS_VERSION_UUID` |
 | "update process version UUID to {uuid}" | [Update Process Version UUID](#update-process-version-uuid) |
 
@@ -99,9 +100,56 @@ When the user wants detail files for just one objective by name:
 
 ---
 
+## Resolve Process Version Name to UUID
+
+When the user provides a **process version name** (e.g., "SJ-HIS-RestrictedSkillset-04") instead of a UUID, use this workflow to resolve it:
+
+```bash
+cd "/Users/sijaiswal/Sids Brain" && python3 -c "
+import json
+import urllib.request
+
+BASE_URL = 'http://localhost:3001'
+PROCESS_VERSION_NAME = '{process_version_name}'
+
+url = f'{BASE_URL}/adhoc/config-list'
+print(f'Searching for process version: {PROCESS_VERSION_NAME}')
+print()
+
+with urllib.request.urlopen(url, timeout=30) as resp:
+    versions = json.loads(resp.read().decode('utf-8'))
+
+matches = [v for v in versions if v['name'] == PROCESS_VERSION_NAME]
+
+if not matches:
+    print(f'ERROR: Process version \"{PROCESS_VERSION_NAME}\" not found.')
+    print(f'Available versions in the last week ({len(versions)} total):')
+    for v in versions[:20]:  # Show first 20
+        print(f'  - {v[\"name\"]} (id: {v[\"id\"]})')
+else:
+    match = matches[0]
+    print(f'Found: {match[\"name\"]}')
+    print(f'UUID: {match[\"id\"]}')
+    print(f'Status: {match[\"status\"]}')
+    print(f'Last Modified: {match[\"configLastModifiedAt\"]}')
+    print()
+    print(f'Use this UUID in the next step: {match[\"id\"]}')
+"
+```
+
+Replace `{process_version_name}` with the exact process version name provided by the user.
+
+**Next step**: Once you have the UUID, proceed to [Objective from Specific Process Version](#objective-from-specific-process-version) using the resolved UUID.
+
+**Note**: The `/adhoc/config-list` endpoint returns process versions modified in the last week. If the version is not found, it may be older than 1 week.
+
+---
+
 ## Objective from Specific Process Version
 
 **CRITICAL**: When the user provides a process version UUID and wants objective details, you **MUST** follow this exact 3-step workflow:
+
+> **Tip**: If you only have a process version **name** (not UUID), see [Resolve Process Version Name to UUID](#resolve-process-version-name-to-uuid) first.
 
 ### Step 1: Fetch objectives list from the process version
 
