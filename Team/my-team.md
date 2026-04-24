@@ -111,4 +111,25 @@ This file contains details of all team members including their Atlassian JIRA Ac
 
 ---
 
+## Team Objectives
+
+The following Vesta configuration objectives are managed by this team:
+
+1. **Additional Final Eligibility Review** (`additionalFinalEligibilityReview`)
+2. **Additional Initial Eligibility Review** (`additionalInitialEligibilityReview`)
+3. **Additional Low Doc Review** (`additionalLowDocReview`)
+4. **Agent Low Doc Review** (`agentLowDocReview`)
+5. **Asset Review** (`assetReview`)
+6. **Final Eligibility Review** (`finalEligibilityReview`)
+7. **Generate Underwriting Package** (`generateUnderwritingPackage`)
+8. **Guideline Review** (`guidelineReview`)
+9. **Income Review** (`incomeReview`)
+10. **Initial Eligibility Review** (`initialEligibilityReview`)
+11. **Loan Restructure** (`loanRestructure`)
+12. **Low Doc Review** (`lowDocReview`)
+
+_For detailed configuration of each objective, see: `Vesta/config/objectives/`_
+
+---
+
 **Last Updated:** April 14, 2026
