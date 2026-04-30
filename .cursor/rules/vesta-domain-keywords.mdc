@@ -1,0 +1,24 @@
+---
+description: When Vesta domain terms are mentioned, use admin-config.md definitions as ground truth
+alwaysApply: true
+---
+
+# Vesta Domain Keyword Reference
+
+Whenever the user mentions any of the following terms, read `/Users/sijaiswal/Sids Brain/Vesta/admin-config.md` for authoritative definitions before responding.
+
+## Trigger Keywords
+
+- **vesta prompt** / **task prompt** — Step-by-step instruction content inside an Instruction Task
+- **task** — A work item linked to an objective. Has a type (Instruction, Document Required, Document Processing, Automated Action), a trigger method (Manual/Automatic/Both), and an entity (Loan, Borrower, etc.). Requires the parent objective to be Open and assigned before it can be worked.
+- **objective** — The primary unit of work configuration. A collection of tasks, automated actions, and validations. Has relevance (when it appears) and readiness (when it becomes Open). Moves through statuses: Upcoming → Open → In Progress → Completed / Blocked / Cancelled.
+- **validation** — A rule configured outside objectives but linked to them. Fires based on relevance logic and can block loan stage transitions, disclosure packages, underwriting actions, or objective completion.
+- **configuration** / **config** — Refers to a Vesta Admin Config version, which contains all objectives, tasks, automated actions, validations, loan stages, document types, facts, rule-based fields, custom fields, and computed fields.
+- **logic** — Refers to relevance, readiness, or auto-complete conditions used on objectives, tasks, validations, and automated actions. Also encompasses facts (reusable true/false boolean conditions referenced across config).
+
+## Key Concepts to Keep in Mind
+
+- **Facts** are reusable boolean conditions (true/false) referenced anywhere in config logic.
+- **Automated Actions** are a special task type that fire automatically when their relevance + readiness are met inside an Open objective.
+- **Loan Stages** (18 total) determine when objectives become relevant in the loan lifecycle.
+- Config is versioned — all of the above lives inside a specific **config version**.
