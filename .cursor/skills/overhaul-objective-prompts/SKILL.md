@@ -40,11 +40,19 @@ Classify each file:
 Read the full scoring rubric from:
 `/Users/sijaiswal/Sids Brain/.cursor/skills/score-prompt/SKILL.md`
 
-Read all instruction task files **in parallel**. Score each one across all 10 dimensions. Collect every flagged issue per task.
+**If there is only 1 instruction task**, read and score it directly in the main agent.
+
+**If there are 2 or more instruction tasks**, launch one background subagent per task using `subagent_type: generalPurpose` — all in a single message (parallel). Each subagent prompt must:
+
+1. Include the full contents of `/Users/sijaiswal/Sids Brain/.cursor/skills/score-prompt/SKILL.md` verbatim.
+2. Include the full contents of the task `.md` file being scored.
+3. Instruct the subagent to return **only** the scorecard table and the full flagged issues list — no rewrites, no file writes.
+
+Wait for all scoring subagents to complete, then collect their results.
 
 ### Scorecard output format
 
-After scoring all tasks, print:
+After all tasks are scored, print:
 
 ```
 ## Scorecard — {Objective Name}
