@@ -1,8 +1,6 @@
 ---
-description: When Vesta domain terms are mentioned, use admin-config.md definitions as ground truth
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Vesta Domain Keyword Reference
 
 Whenever the user mentions any of the following terms, read `/Users/sijaiswal/Sids Brain/Vesta/admin-config.md` for authoritative definitions before responding.
