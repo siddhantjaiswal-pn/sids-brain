@@ -27,7 +27,11 @@ When this skill is invoked, print this banner first before doing anything else:
 
 ## Mode Selection
 
-Immediately after the banner, ask:
+Immediately after the banner, determine the mode:
+
+- If the user's message references a `.md` file path → **Existing Prompt Mode** — do NOT ask the question; go directly to [Existing Prompt Mode](#existing-prompt-mode).
+- If the user's message contains a workflow description but no file path → **New Prompt Mode** — do NOT ask the question; go directly to [New Prompt Mode](#new-prompt-mode).
+- If the intent is ambiguous → ask:
 
 > "Are we creating a **new** prompt or improving an **existing** one?"
 
@@ -62,6 +66,7 @@ Use the workflow description to write the Checklist Steps. Apply every internal 
 8. Does the success path call `Use finish with status=completed` verbatim?
 9. Are data sources distinguished? Loan data reads use `Use search_loan_data_model`. Document reads use `Review the [document]` or `Get the [document]`. Never conflate.
 10. Does the task avoid cross-task memory? No step may reference what another task decided.
+11. Does any step reference the agent navigating a UI, clicking buttons, selecting fields from a screen, or interacting with any interface? The agent has **no UI access whatsoever** — rewrite as an explicit data lookup or document review.
 
 **Formatting rules:**
 - Number every top-level step: `**1.**`, `**2.**`, etc.
@@ -141,7 +146,7 @@ Do NOT ask what needs to change yet. Do NOT make any edits. Wait for the user's 
 
 ### Step 3 — Ask what needs to change
 
-> "What should change? Tell me which steps to update, new rules to add, or edge cases to handle — or say 'fix all flagged issues' to address everything from the QC scan."
+> "What should change? Say **'fix all flagged issues'** to address everything from the QC scan, or tell me which specific steps to update, new rules to add, or edge cases to handle."
 
 Do NOT make changes until answered. If a new constraint conflicts with an existing one, flag it and ask which takes precedence.
 
@@ -155,7 +160,7 @@ Show the full updated steps. Ask for confirmation before proceeding to scoring.
 
 ## Score Phase
 
-After confirmed steps, score the prompt across all 10 dimensions using the rubric below. Run this internally — produce the scorecard and flagged issues list in chat.
+After confirmed steps, score the prompt across all 11 dimensions using the rubric below. Run this internally — produce the scorecard and flagged issues list in chat.
 
 ### Scoring Rubric
 
@@ -189,6 +194,9 @@ After confirmed steps, score the prompt across all 10 dimensions using the rubri
 **10. Data source distinction** — Are loan data reads and document reviews kept distinct?
 - 10: Every access explicitly names the source. 5–9: Mostly clear; one ambiguous. 1–4: Multiple conflated. 0: Source never specified.
 
+**11. No UI references** — Does any step instruct the agent to navigate a UI, click a button, select a field from a screen, or interact with any interface?
+- 10: No UI references anywhere. 5–9: One ambiguous phrasing that could imply UI interaction. 1–4: One or more explicit UI navigation steps. 0: Multiple UI references throughout.
+
 ### Scorecard output format
 
 ```
@@ -206,8 +214,9 @@ After confirmed steps, score the prompt across all 10 dimensions using the rubri
 | 8  | Action vocabulary       |  ?/10 | {one-sentence rationale}       |
 | 9  | Escalation coverage     |  ?/10 | {one-sentence rationale}       |
 | 10 | Data source distinction |  ?/10 | {one-sentence rationale}       |
+| 11 | No UI references        |  ?/10 | {one-sentence rationale}       |
 
-Overall: ?.? / 10
+Overall: ?.? / 10  (average across 11 dimensions)
 ```
 
 Then list every flagged issue:
@@ -222,6 +231,7 @@ Then list every flagged issue:
 [VAGUE]      Step N — {vague field/document reference}
 [ESCALATION] Step N — {missing escalation or missing reason}
 [SOURCE]     Step N — {ambiguous data source}
+[UI-ACCESS]  Step N — {UI navigation or field-selection reference}
 ```
 
 If no issues in a category, omit it. If no issues at all, print `No issues found.`
@@ -242,12 +252,23 @@ If overall score < 9.0, collect all confirmations first, then apply all rewrites
 - `[CROSS-TASK]` — rewrite as an explicit runtime lookup (`Use list_objectives to find...` or `Use search_loan_data_model to get...`). No confirmation needed.
 - `[VAGUE]` — **pause and confirm**: show the vague reference and ask: "Step N uses '[vague term]' — what is the exact field name / document name to use here?" Wait for the answer.
 - `[SOURCE]` — **pause and confirm**: show the ambiguous step and ask: "Step N accesses data without specifying the source — should this read from loan data (`Use search_loan_data_model`) or review a document (`Review the [document]`)? If a document, what is its name?" Wait for the answer.
+- `[UI-ACCESS]` — **pause and confirm**: show the step and ask: "Step N references UI navigation or field selection — the agent has no UI access. What should it actually retrieve? Use `search_loan_data_model` for loan data fields, or `Review the [document]` for a document. What specifically is it trying to get?" Wait for the answer.
 
-List all flags requiring confirmation (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`) in a single message and collect all answers at once — do not ask one at a time. Flags that do not require confirmation (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) are applied automatically.
+List all flags requiring confirmation (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`, `[UI-ACCESS]`) in a single message and collect all answers at once — do not ask one at a time. Flags that do not require confirmation (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) are applied automatically.
 
-After all confirmations are collected and all rewrites applied, re-run the full scoring rubric and print a second scorecard.
+After all confirmations are collected and all rewrites applied, print a brief "Changes applied" summary before re-scoring:
+
+```
+--- Changes Applied ---
+• Step N: [what changed, one line]
+• Step N: [what changed, one line]
+```
+
+Then re-run the full scoring rubric and print a second scorecard.
 
 If the score is still < 9.0 after one rewrite pass, do a second targeted pass on remaining flagged issues, then re-score. Continue until score >= 9.0.
+
+**Second-pass confirmation rules:** If the second (or any subsequent) pass surfaces new confirmation-required flags (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`, `[UI-ACCESS]`), collect all of them in a single message — the same way as the first pass — before applying any rewrites. Do not apply auto-fixed flags (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) separately; batch them with the rewrite pass after confirmations are received.
 
 ---
 
@@ -257,7 +278,10 @@ Once the score is >= 9.0:
 
 1. Create `output-prompts/` in the workspace root if it does not exist.
 2. Derive the task slug from the task name (lowercase, hyphens, no special characters).
-3. Save the file as `output-prompts/{task-slug}.md`.
+3. Check whether `output-prompts/{task-slug}.md` already exists.
+   - If it **does not exist** → save normally.
+   - If it **already exists** → ask: "output-prompts/{task-slug}.md already exists. Overwrite it, or save as `{task-slug}-v2.md`?" Wait for the answer before writing.
+4. Save the file to the confirmed path as `output-prompts/{task-slug}.md` (or the versioned name).
 
 The file must contain **only** these elements — nothing else:
 

@@ -20,7 +20,17 @@ Just say one of these in Cursor chat:
 - `generate a prompt for [task]`
 - `score and rewrite this prompt`
 
-The skill activates automatically.
+The skill activates automatically and prints a banner:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║              ✦  Sid's Prompt Factory  ✦                      ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Mode is detected automatically:** if you reference a `.md` file path, the agent enters Existing Prompt Mode without asking. If you describe a workflow, it enters New Prompt Mode. It only asks "new or existing?" when the intent is ambiguous.
 
 ---
 
@@ -82,11 +92,11 @@ Point the agent to a `.md` file. The factory runs an **initial QC scan first** �
 
 > "Score is X.X/10. Want me to improve this prompt?"
 
-If you say yes, it asks what needs to change (or you can say "fix all flagged issues"), applies your changes, then runs the standard score → rewrite → save loop. If you say no, it stops — nothing is touched.
+If you say yes, it prompts: **"Say 'fix all flagged issues' to address everything, or tell me what specifically to change."** After applying changes, it prints a brief "Changes applied" list before re-scoring so you can see exactly what was rewritten. If you say no, it stops — nothing is touched.
 
 ---
 
-## The 10 Quality Dimensions
+## The 11 Quality Dimensions
 
 Every prompt is scored 0–10 on each of these before it is saved:
 
@@ -102,8 +112,9 @@ Every prompt is scored 0–10 on each of these before it is saved:
 | 8 | Action vocabulary | Are Vesta's canonical action phrasings used throughout? |
 | 9 | Escalation coverage | Does every failure condition route to an explicit escalation with a stated reason? |
 | 10 | Data source distinction | Are loan data reads and document reviews kept clearly separate? |
+| 11 | No UI references | Does any step tell the agent to navigate a UI, click a button, or pick a field from a screen? The agent has no UI access — always a defect. |
 
-The prompt must score **9.0 or above overall** before it is saved.
+The prompt must score **9.0 or above on average** (across all 11 dimensions) before it is saved.
 
 ---
 
@@ -123,8 +134,9 @@ Each flag type has a specific fix:
 | `[CROSS-TASK]` | Rewrites as an explicit runtime lookup | No — auto-fixed |
 | `[VAGUE]` | Asks: *"Step N uses '[vague term]' — what is the exact field or document name?"* Then substitutes your answer | **Yes — you confirm** |
 | `[SOURCE]` | Asks: *"Step N — loan data or document review? If document, what is its name?"* Then substitutes your answer | **Yes — you confirm** |
+| `[UI-ACCESS]` | Asks: *"Step N references UI navigation — the agent has no UI access. What should it actually retrieve? Loan data field or document review?"* Then substitutes your answer | **Yes — you confirm** |
 
-> All confirmation flags (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`) are collected in a single message before any rewriting begins — never one at a time. Auto-fixed flags (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) are applied without asking.
+> All confirmation flags (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`, `[UI-ACCESS]`) are collected in a single message before any rewriting begins — never one at a time. Auto-fixed flags (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) are applied without asking.
 
 ---
 
@@ -135,6 +147,8 @@ Every prompt saved by this skill:
 - Lives in `output-prompts/{task-slug}.md` in the workspace root
 - Starts with the header: `# 🤖 ✦ ✦ ✦  Generated using "Sid's Prompt Factory"  ✦ ✦ ✦ 🤖`
 - Contains only the task title and Checklist Steps — no metadata, no External ID, no Completion Conditions
+
+If a file with the same slug already exists, the agent asks: **"Overwrite it, or save as `{task-slug}-v2.md`?"** — nothing is written until you confirm.
 
 Original source files are **never modified**.
 

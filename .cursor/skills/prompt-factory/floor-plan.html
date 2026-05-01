@@ -286,7 +286,7 @@
       <span class="pill neutral sm">Track B — Refurbishment</span>
       <span class="pill warning sm">Rework Loop</span>
       <span class="pill success sm">9.0+ QC Gate</span>
-      <span class="pill warning sm">5 Manual Sign-offs</span>
+      <span class="pill warning sm">6 Manual Sign-offs</span>
       <span class="pill info sm">3 Auto-Repairs</span>
     </div>
   </div>
@@ -296,9 +296,9 @@
   ══════════════════════════════════════════════ -->
   <div class="section-bar">Production Floor Stats</div>
   <div class="grid4" style="margin-bottom:36px;">
-    <div class="stat"><div class="stat-value">10</div><div class="stat-label">QC Checkpoints</div></div>
+    <div class="stat"><div class="stat-value">11</div><div class="stat-label">QC Checkpoints</div></div>
     <div class="stat"><div class="stat-value success">9.0+</div><div class="stat-label">Pass Threshold</div></div>
-    <div class="stat"><div class="stat-value warning">5</div><div class="stat-label">Manual Sign-offs</div></div>
+    <div class="stat"><div class="stat-value warning">6</div><div class="stat-label">Manual Sign-offs</div></div>
     <div class="stat"><div class="stat-value info">3</div><div class="stat-label">Auto-Repairs</div></div>
   </div>
 
@@ -504,6 +504,7 @@
         <tr class="striped"><td class="center">8</td><td><strong>Action Vocabulary</strong></td><td>Canonical Vesta action phrasings used throughout</td><td>"check the credit" instead of "Review the credit report"</td></tr>
         <tr class="striped"><td class="center">9</td><td><strong>Escalation Coverage</strong></td><td>Every failure path escalates with an explicit quoted reason string</td><td>Escalation present but missing the reason string in single quotes</td></tr>
         <tr class="striped"><td class="center">10</td><td><strong>Data Source Distinction</strong></td><td>Loan data reads and document reviews kept clearly separate</td><td>"check income" without specifying search_loan_data_model vs document review</td></tr>
+        <tr class="striped"><td class="center">11</td><td><strong>No UI References</strong></td><td>No step navigates a UI, clicks a button, or picks a field from a screen — the agent has no UI access</td><td>"Go to the loan screen and select the field" — agent cannot access any UI</td></tr>
       </tbody>
     </table>
   </div>
@@ -538,6 +539,7 @@
         <tr class="row-info"><td><code>[VOCAB]</code></td><td>Non-canonical action phrasing</td><td>Auto-replaces with exact canonical Vesta action phrase</td><td><span class="badge-auto">Auto-repaired</span></td></tr>
         <tr class="row-info"><td><code>[ESCALATION]</code></td><td>Escalation missing reason string</td><td>Auto-adds quoted reason string in single quotes</td><td><span class="badge-auto">Auto-repaired</span></td></tr>
         <tr class="row-info"><td><code>[CROSS-TASK]</code></td><td>Reference to another task output</td><td>Auto-rewrites as explicit runtime lookup</td><td><span class="badge-auto">Auto-repaired</span></td></tr>
+        <tr class="row-warn"><td><code>[UI-ACCESS]</code></td><td>Step navigates UI, clicks a button, or picks a field from a screen</td><td>Asks: "Step N references UI navigation — the agent has no UI access. What should it actually retrieve? Loan data field or document review?"</td><td><span class="badge-required">Required</span></td></tr>
       </tbody>
     </table>
   </div>
