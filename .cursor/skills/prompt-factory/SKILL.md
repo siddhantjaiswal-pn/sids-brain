@@ -48,11 +48,11 @@ Ask the user for one thing only:
 
 > "Describe the full workflow for this task in as much detail as you can — what the agent should do, any branching conditions, calculations, escalation triggers, and what success looks like."
 
-Do NOT ask any follow-up questions. Use the description as the sole input.
+After the user provides their description, ask all clarifying questions needed to resolve ambiguities before writing anything. Cover: missing branch conditions, unclear escalation triggers, undefined field names, document names, or calculation rules. Collect all answers in a single message — do not ask one at a time.
 
 ### Step 2 — Write Checklist Steps
 
-Use the workflow description to write the Checklist Steps. Apply every internal quality check below silently — do not ask the user about them:
+Once all clarifying questions are answered, use the full description plus answers to write the Checklist Steps. Apply every internal quality check below silently — do not ask the user about them:
 
 **Internal quality checklist (never surface these as questions):**
 
