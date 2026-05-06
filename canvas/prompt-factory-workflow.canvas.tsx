@@ -557,7 +557,7 @@ export default function PromptFactoryWorkflow() {
       <Stack gap={14}>
         <AccentBar theme={theme}>Fabrication Floor — Mode Detail</AccentBar>
         <Grid columns={2} gap={16}>
-          <Card>
+          <Card style={{ height: 400 }}>
             <CardHeader trailing={<Pill tone="info" size="sm" active>Track A</Pill>}>
               New Prompt — Load Material
             </CardHeader>
