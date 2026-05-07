@@ -51,6 +51,7 @@ Use these exact phrasings so the agent recognizes the intended action:
 | Make a UW decision | "Set loan decision to [decision]" |
 | Read loan data | "Use search_loan_data_model to get [field/entity]" |
 | List objectives | "Use list_objectives to find [objective name]" |
+| Accept or review a document | "Mark the document as Accepted" or "Mark the document as Reviewed" |
 | Complete the task | "Use finish with status=completed" |
 
 ---
