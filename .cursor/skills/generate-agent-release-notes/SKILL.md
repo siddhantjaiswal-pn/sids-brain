@@ -114,7 +114,8 @@ Status: [Status]
 ```
 
 **Writing guidelines:**
-- One paragraph per ticket, 1–3 sentences max
+- **Be concise, sharp, and short** — summaries must be brief and to the point
+- One paragraph per ticket, 1–2 sentences maximum
 - Lead with the outcome: what the agent now does differently
 - Avoid Jira jargon, field names, and implementation details
 - If a ticket's description is in ADF format (not plain text), extract readable text from the `content` nodes
