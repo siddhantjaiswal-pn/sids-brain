@@ -3,12 +3,12 @@ name: prompt-factory
 description: >-
   Orchestrates the full Vesta prompt lifecycle for a single task: takes a
   detailed workflow description, writes Checklist Steps using Prompt Designer
-  rules and 10 internal quality checks, scores across 10 dimensions, rewrites
-  to fix all flagged issues, and saves the final prompt to output-prompts/.
-  Use when the user says "prompt factory", "run prompt factory", "create a
-  prompt", "generate a prompt for [task]", "score and rewrite this prompt",
-  "fix this prompt", or provides a task description and wants a production-ready
-  Vesta agent task prompt.
+  rules and 11 internal quality checks, scores across 11 dimensions (rubric
+  delegated to score-prompt), rewrites to fix all flagged issues, and saves
+  the final prompt to output-prompts/. Use when the user says "prompt factory",
+  "run prompt factory", "create a prompt", "generate a prompt for [task]",
+  "score and rewrite this prompt", "fix this prompt", or provides a task
+  description and wants a production-ready Vesta agent task prompt.
 ---
 
 # Sid's Prompt Factory
@@ -48,7 +48,14 @@ Ask the user for one thing only:
 
 > "Describe the full workflow for this task in as much detail as you can — what the agent should do, any branching conditions, calculations, escalation triggers, and what success looks like."
 
-After the user provides their description, ask all clarifying questions needed to resolve ambiguities before writing anything. Cover: missing branch conditions, unclear escalation triggers, undefined field names, document names, or calculation rules. Collect all answers in a single message — do not ask one at a time.
+After the user provides their description, always ask the following two questions plus any additional clarifying questions needed to resolve ambiguities. Collect all questions in a single message — do not ask one at a time:
+
+1. When should the agent escalate? What reason should the note include?
+2. What does successful completion look like? What summary note should the agent leave?
+
+Also cover any ambiguities found in the description: missing branch conditions, unclear escalation triggers, undefined field names, document names, or calculation rules.
+
+Derive the task name silently from the workflow description (e.g. a description about verifying the loan amount → "Verify Loan Amount"). Do not ask the user to confirm the name — it is used internally for the Save Phase and Completion Summary.
 
 ### Step 2 — Write Checklist Steps
 
@@ -91,21 +98,9 @@ Calculation Instructions:
 - If no valid value exists within all constraints => Escalate the objective with the reason '[reason]'.
 ```
 
-**Action vocabulary — use these exact phrasings:**
+**Action vocabulary:**
 
-| Action | Phrasing |
-|--------|----------|
-| Write a loan field | `Set [field] to [value]` |
-| Leave a note | `Write a note stating [message]` |
-| Escalate | `Escalate the objective with the reason '[reason]'` |
-| Block | `Block the objective for [duration/condition]` |
-| Review a document | `Review the [document type]` or `Get the [document]` |
-| Run validations | `Run get_loan_validations and check for [specific validations]` |
-| Call an integration | `Order [service]` or `Run [integration name]` |
-| Make a UW decision | `Set loan decision to [decision]` |
-| Read loan data | `Use search_loan_data_model to get [field/entity]` |
-| List objectives | `Use list_objectives to find [objective name]` |
-| Complete the task | `Use finish with status=completed` |
+The canonical action vocabulary lives in `.cursor/skills/vesta-prompt-designer/SKILL.md` under the **Action Vocabulary** section. Read that file and apply every phrasing exactly. Do not paraphrase or invent new actions. If a needed action is not in the vocabulary, escalate to the user and ask which canonical phrasing to use.
 
 ### Step 3 — Confirm before scoring
 
@@ -125,9 +120,28 @@ Read the `.md` file the user points to.
 
 ### Step 2 — Run initial QC scan
 
-Before asking the user anything, score the prompt across all 10 dimensions using the full scoring rubric from the [Score Phase](#score-phase). Print the full scorecard and flagged issues list.
+Before asking the user anything, score the prompt across all 11 dimensions using the canonical rubric defined in `.cursor/skills/score-prompt/SKILL.md`. Read that file and apply its rubric, scorecard format, and flag taxonomy verbatim. Print the full scorecard and flagged issues list.
 
-Then present a summary:
+**Fast path — if the initial overall score is >= 9.0:**
+
+The prompt already meets the quality bar. Do NOT offer a rewrite by default. Instead present:
+
+> "**Initial QC scan complete.**
+>
+> Score: **X.X / 10** — already meets the 9.0+ quality bar; no rewrite needed.
+>
+> [scorecard table]
+>
+> [flagged issues list, if any]
+>
+> Anything specific you'd still like changed?"
+
+- If the user says **no / nothing** → stop. Do not proceed.
+- If the user names specific changes → continue to Step 3 with their requested changes only (skip the "fix all flagged issues" framing).
+
+**Standard path — if the initial overall score is < 9.0:**
+
+Present:
 
 > "**Initial QC scan complete.**
 >
@@ -160,81 +174,17 @@ Show the full updated steps. Ask for confirmation before proceeding to scoring.
 
 ## Score Phase
 
-After confirmed steps, score the prompt across all 11 dimensions using the rubric below. Run this internally — produce the scorecard and flagged issues list in chat.
+After confirmed steps, score the prompt by **applying the canonical rubric defined in `.cursor/skills/score-prompt/SKILL.md`**. Run this internally — produce the scorecard and flagged issues list in chat.
 
-### Scoring Rubric
+**How to run the Score Phase:**
 
-**1. Specificity** — Does every step name exact field names, document types, and values?
-- 10: Every field, document, and value is named explicitly. 5–9: Most explicit; a few vague references. 1–4: Multiple vague steps. 0: Entirely vague.
+1. Read `.cursor/skills/score-prompt/SKILL.md` and load its 11-dimension rubric.
+2. For each dimension, assign a 0–10 score with a one-sentence rationale.
+3. Render the scorecard using the **exact format** specified in score-prompt's "Step 4 — Render the scorecard" section. Prepend the local header `## Prompt Scorecard` so the user can distinguish factory output from a standalone score-prompt call.
+4. List flagged issues using the exact flag taxonomy (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VOCAB]`, `[CROSS-TASK]`, `[VAGUE]`, `[ESCALATION]`, `[SOURCE]`, `[UI-ACCESS]`) defined there.
+5. Compute the overall score as the simple average across all 11 dimensions, rounded to one decimal place.
 
-**2. Clarity** — Does each step answer: what to check, what to look for, what to do with the result?
-- 10: Every step has all three. 5–9: Most clear; one or two outcomes undefined. 1–4: Several steps ambiguous. 0: Unclear throughout.
-
-**3. Conciseness** — Is each step free of padding, repetition, and prose explanations?
-- 10: Tight, action-focused. 5–9: Minor repetition. 1–4: Noticeable padding. 0: Bloated throughout.
-
-**4. Branch completeness** — Does every `If [condition]` have a matching `else` or `else if`?
-- 10: Every branch handled. 5–9: One or two missing. 1–4: Multiple missing. 0: No else handling.
-
-**5. Path termination** — Does every branch end in Complete or Escalate?
-- 10: Every branch terminates. 5–9: One trails off. 1–4: Several have no terminal. 0: Most have no terminal.
-
-**6. Explicit completion call** — Does the success path contain `Use finish with status=completed` verbatim?
-- 10: Present verbatim. 5: Paraphrased. 0: Absent.
-
-**7. Self-containment** — Does any step reference what a previous task found?
-- 10: No cross-task references. 5–9: One ambiguous. 1–4: One or more explicit cross-task refs. 0: Multiple.
-
-**8. Action vocabulary** — Does the prompt use canonical action phrasings?
-- 10: All canonical. 5–9: Mostly canonical; one or two informal. 1–4: Several non-standard. 0: None canonical.
-
-**9. Escalation coverage** — Does every failure condition route to `Escalate the objective with the reason '[reason]'`?
-- 10: Every failure path has explicit escalation with reason. 5–9: Most covered; one missing reason. 1–4: Some paths missing. 0: No explicit escalation.
-
-**10. Data source distinction** — Are loan data reads and document reviews kept distinct?
-- 10: Every access explicitly names the source. 5–9: Mostly clear; one ambiguous. 1–4: Multiple conflated. 0: Source never specified.
-
-**11. No UI references** — Does any step instruct the agent to navigate a UI, click a button, select a field from a screen, or interact with any interface?
-- 10: No UI references anywhere. 5–9: One ambiguous phrasing that could imply UI interaction. 1–4: One or more explicit UI navigation steps. 0: Multiple UI references throughout.
-
-### Scorecard output format
-
-```
-## Prompt Scorecard
-
-| #  | Dimension               | Score | Notes                          |
-|----|-------------------------|-------|--------------------------------|
-| 1  | Specificity             |  ?/10 | {one-sentence rationale}       |
-| 2  | Clarity                 |  ?/10 | {one-sentence rationale}       |
-| 3  | Conciseness             |  ?/10 | {one-sentence rationale}       |
-| 4  | Branch completeness     |  ?/10 | {one-sentence rationale}       |
-| 5  | Path termination        |  ?/10 | {one-sentence rationale}       |
-| 6  | Explicit completion     |  ?/10 | {one-sentence rationale}       |
-| 7  | Self-containment        |  ?/10 | {one-sentence rationale}       |
-| 8  | Action vocabulary       |  ?/10 | {one-sentence rationale}       |
-| 9  | Escalation coverage     |  ?/10 | {one-sentence rationale}       |
-| 10 | Data source distinction |  ?/10 | {one-sentence rationale}       |
-| 11 | No UI references        |  ?/10 | {one-sentence rationale}       |
-
-Overall: ?.? / 10  (average across 11 dimensions)
-```
-
-Then list every flagged issue:
-
-```
---- Flagged Issues ---
-[BRANCH]     Step N — {missing else/else if}
-[TERMINAL]   Step N — {branch with no Complete or Escalate}
-[COMPLETION] Step N — {missing or paraphrased Use finish call}
-[VOCAB]      Step N — {non-canonical phrasing}
-[CROSS-TASK] Step N — {cross-task reference}
-[VAGUE]      Step N — {vague field/document reference}
-[ESCALATION] Step N — {missing escalation or missing reason}
-[SOURCE]     Step N — {ambiguous data source}
-[UI-ACCESS]  Step N — {UI navigation or field-selection reference}
-```
-
-If no issues in a category, omit it. If no issues at all, print `No issues found.`
+**Single source of truth:** Do not redefine, paraphrase, or extend the rubric in this file. If the rubric needs updating, edit `score-prompt/SKILL.md` — every other skill (including this one) reads from there.
 
 ---
 
@@ -247,7 +197,7 @@ If overall score < 9.0, collect all confirmations first, then apply all rewrites
 - `[BRANCH]` — **pause and confirm**: show the incomplete step and ask: "Step N has no else/else if — what should happen when the condition is not met? Should it Complete or Escalate, and with what reason?" Wait for the answer.
 - `[TERMINAL]` — **pause and confirm**: show the branch that trails off and ask: "Step N — branch has no terminal action. Should it Complete (`Use finish with status=completed`) or Escalate? If Escalate, what is the reason?" Wait for the answer.
 - `[COMPLETION]` — **pause and confirm**: show the paraphrased line and ask: "Step N has a paraphrased completion call — should this be replaced with `Use finish with status=completed` verbatim? Confirm or provide the exact phrasing to use." Wait for the answer.
-- `[VOCAB]` — replace with the exact canonical phrasing from the action vocabulary table. No confirmation needed.
+- `[VOCAB]` — replace with the exact canonical phrasing from the Action Vocabulary section in `.cursor/skills/vesta-prompt-designer/SKILL.md`. No confirmation needed.
 - `[ESCALATION]` — add a stated reason string in single quotes. No confirmation needed.
 - `[CROSS-TASK]` — rewrite as an explicit runtime lookup (`Use list_objectives to find...` or `Use search_loan_data_model to get...`). No confirmation needed.
 - `[VAGUE]` — **pause and confirm**: show the vague reference and ask: "Step N uses '[vague term]' — what is the exact field name / document name to use here?" Wait for the answer.
@@ -264,9 +214,49 @@ After all confirmations are collected and all rewrites applied, print a brief "C
 • Step N: [what changed, one line]
 ```
 
-Then re-run the full scoring rubric and print a second scorecard.
+### Re-scoring with a Diff Scorecard
 
-If the score is still < 9.0 after one rewrite pass, do a second targeted pass on remaining flagged issues, then re-score. Continue until score >= 9.0.
+After each rewrite pass, re-run the full rubric internally — but **only print the dimensions whose score changed** plus the new overall. The full scorecard is reprinted only at the very end of the pipeline (in the Completion Summary path) or when the user explicitly asks for it.
+
+Diff scorecard format:
+
+```
+## Diff Scorecard — Pass N
+
+| #  | Dimension               | Before | After | Δ    | Notes                          |
+|----|-------------------------|--------|-------|------|--------------------------------|
+| 4  | Branch completeness     | 6/10   | 10/10 | +4   | All if/else branches now closed |
+| 8  | Action vocabulary       | 7/10   | 10/10 | +3   | Replaced 3 informal phrasings   |
+| 11 | No UI references        | 4/10   | 10/10 | +6   | Removed UI-click step in step 5 |
+
+Overall: was X.X / 10  →  now Y.Y / 10  (Δ +Z.Z)
+
+Remaining flags: [list any flag tags still open, or "None"]
+```
+
+If no dimensions changed, print `No score change after Pass N — re-evaluating remaining flags.` and proceed to the next pass (subject to the cap).
+
+### Iteration Cap
+
+The rewrite loop is **capped at 3 passes**. After each pass:
+
+- If overall score >= 9.0 → exit the rewrite loop and proceed to Save Phase.
+- If overall score < 9.0 and pass count < 3 → run another targeted rewrite pass on remaining flagged issues.
+- If pass count == 3 and overall score is still < 9.0 → **stop and escalate to the user**:
+
+> "**Iteration cap reached.** Score is **X.X / 10** after 3 rewrite passes — still below the 9.0 quality bar.
+>
+> **Top remaining flags:**
+> 1. [flag tag] Step N — [issue]
+> 2. [flag tag] Step N — [issue]
+> 3. [flag tag] Step N — [issue]
+>
+> How would you like to proceed?
+> - **Save anyway** — write the file at the current score (will be recorded in the Completion Summary).
+> - **Restart** — discard current draft and rewrite from scratch with a different approach.
+> - **Stop** — abandon the run; do not save anything."
+
+Wait for the user's choice before doing anything else.
 
 **Second-pass confirmation rules:** If the second (or any subsequent) pass surfaces new confirmation-required flags (`[BRANCH]`, `[TERMINAL]`, `[COMPLETION]`, `[VAGUE]`, `[SOURCE]`, `[UI-ACCESS]`), collect all of them in a single message — the same way as the first pass — before applying any rewrites. Do not apply auto-fixed flags (`[VOCAB]`, `[ESCALATION]`, `[CROSS-TASK]`) separately; batch them with the rewrite pass after confirmations are received.
 
@@ -274,10 +264,15 @@ If the score is still < 9.0 after one rewrite pass, do a second targeted pass on
 
 ## Save Phase
 
-Once the score is >= 9.0:
+Enter the Save Phase when **either** condition is true:
+
+- The overall score is >= 9.0, OR
+- The iteration cap was reached and the user chose **Save anyway**.
+
+Steps:
 
 1. Create `output-prompts/` in the workspace root if it does not exist.
-2. Derive the task slug from the task name (lowercase, hyphens, no special characters).
+2. Derive the task slug from the task name auto-derived in New Prompt Mode Step 1 (or from the existing file name in Existing Prompt Mode). Lowercase, hyphens, no special characters.
 3. Check whether `output-prompts/{task-slug}.md` already exists.
    - If it **does not exist** → save normally.
    - If it **already exists** → ask: "output-prompts/{task-slug}.md already exists. Overwrite it, or save as `{task-slug}-v2.md`?" Wait for the answer before writing.
@@ -308,19 +303,18 @@ After saving, print:
 ```
 ## Prompt Factory — Done
 
-Task:        {Task Name}
-File:        output-prompts/{task-slug}.md
+Task:            {Task Name}
+File:            output-prompts/{task-slug}.md
 Initial score:   ?.? / 10
 Final score:     ?.? / 10
 Rewrite passes:  N
+Quality bar:     met | NOT MET (saved at user's request after iteration cap)
 ```
+
+If the file was saved below 9.0 because the user picked **Save anyway** at the iteration cap, set `Quality bar` to `NOT MET` and append a one-line list of the unresolved flag tags so it is visible at a glance.
 
 ---
 
-## Anti-Patterns (never write these)
+## Anti-Patterns
 
-| Bad | Good |
-|-----|------|
-| "If the credit review found issues, escalate." | "Review the credit report. If any tradeline shows 60+ days past due in the last 12 months, escalate the objective with the reason 'Derogatory tradeline found.'" |
-| "Make sure the borrower's income is right." | "Use search_loan_data_model to get the borrower's monthly income. Review the pay stubs and W-2s. If they don't match, set the monthly income field to the lesser of the two. Write a note summarizing what was changed and why." |
-| "Notify the borrower of missing documents." | "Write a note listing the missing documents and escalate the objective with the reason 'Missing documents require borrower follow-up.'" |
+The canonical anti-patterns list lives in `.cursor/skills/vesta-prompt-designer/SKILL.md` under the **Anti-Patterns** section. Read that file and apply the same Bad → Good rewrites when correcting drafted steps. Do not duplicate or extend the list here — edit the canonical file instead so every skill picks up the change.
