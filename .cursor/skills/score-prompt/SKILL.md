@@ -1,11 +1,13 @@
 ---
 name: score-prompt
 description: >-
-  Scores a Vesta agent task prompt (.md) file across 10 quality dimensions on a 0–10 scale,
+  Scores a Vesta agent task prompt (.md) file across 11 quality dimensions on a 0–10 scale,
   producing a scorecard table with per-dimension rationale and a flagged issues list.
-  Use when the user says "score this prompt", "grade this task", "evaluate this .md",
-  "rate my prompt", "audit this task file", "check prompt quality", or provides a .md path
-  and asks for a quality review. Also use automatically after vesta-prompt-designer saves a file.
+  This skill is the canonical source of the prompt scoring rubric — other skills
+  (prompt-factory, overhaul-objective-prompts) reference it. Use when the user says
+  "score this prompt", "grade this task", "evaluate this .md", "rate my prompt",
+  "audit this task file", "check prompt quality", or provides a .md path and asks for
+  a quality review. Also use automatically after vesta-prompt-designer saves a file.
 ---
 
 # Prompt Scorer
@@ -20,7 +22,9 @@ When this skill is invoked, print this banner first before doing anything else:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-Reads a Vesta task `.md` file and scores it across 10 quality dimensions. Output is chat-only — never modify the target file.
+Reads a Vesta task `.md` file and scores it across 11 quality dimensions. Output is chat-only — never modify the target file.
+
+> This skill is the **canonical source** of the Vesta prompt scoring rubric. Other skills (`prompt-factory`, `overhaul-objective-prompts`) read this file at runtime and apply the same rubric, scorecard format, and flag taxonomy defined here. Edit this file once to update scoring everywhere.
 
 ---
 
@@ -34,7 +38,7 @@ Reads a Vesta task `.md` file and scores it across 10 quality dimensions. Output
 
 Read the full contents. Note the number of top-level steps and whether a `## Checklist Steps` section is present.
 
-## Step 3 — Score all 10 dimensions
+## Step 3 — Score all 11 dimensions
 
 For each dimension, assign a score from 0–10 and write a one-sentence rationale. Use the rubric below.
 
@@ -91,7 +95,7 @@ Does any step reference what a previous task found or decided? (Cross-task memor
 **8. Action vocabulary**
 Does the prompt use the canonical action phrasings from the Vesta Prompt Designer?
 
-Canonical phrasings: `Set [field] to [value]` · `Write a note stating` · `Escalate the objective with the reason` · `Block the objective for` · `Review the [document]` · `Get the [document]` · `Run get_loan_validations` · `Order [service]` · `Use search_loan_data_model` · `Use list_objectives` · `Use finish with status=completed`
+Canonical phrasings: `Set [field] to [value]` · `Write a note stating` · `Escalate the objective with the reason` · `Block the objective for` · `Review the [document]` · `Get the [document]` · `Run get_loan_validations` · `Order [service]` · `Use search_loan_data_model` · `Use list_objectives` · `Use finish with status=completed` · `Mark the document as Accepted` · `Mark the document as Reviewed`
 
 - 10: All actions use canonical phrasings.
 - 5–9: Mostly canonical; one or two informal phrasings.
@@ -111,6 +115,13 @@ Are loan data reads (`Use search_loan_data_model`) and document reviews (`Review
 - 5–9: Mostly clear; one step is ambiguous about which source it uses.
 - 1–4: Multiple steps conflate loan data and documents.
 - 0: Source is never specified.
+
+**11. No UI references**
+Does any step instruct the agent to navigate a UI, click a button, select a field from a screen, or interact with any interface? The agent has no UI access whatsoever — every UI reference is a defect.
+- 10: No UI references anywhere.
+- 5–9: One ambiguous phrasing that could imply UI interaction.
+- 1–4: One or more explicit UI navigation steps.
+- 0: Multiple UI references throughout.
 
 ---
 
@@ -133,8 +144,9 @@ File: {relative path to the scored file}
 | 8  | Action vocabulary       |  ?/10 | {one-sentence rationale}       |
 | 9  | Escalation coverage     |  ?/10 | {one-sentence rationale}       |
 | 10 | Data source distinction |  ?/10 | {one-sentence rationale}       |
+| 11 | No UI references        |  ?/10 | {one-sentence rationale}       |
 
-Overall: ?.? / 10
+Overall: ?.? / 10  (average across 11 dimensions)
 ```
 
 Then list every flagged issue found, tagged by category:
@@ -149,6 +161,7 @@ Then list every flagged issue found, tagged by category:
 [VAGUE]      Step N — {vague field/document reference}
 [ESCALATION] Step N — {failure condition missing escalation or missing reason}
 [SOURCE]     Step N — {ambiguous data source}
+[UI-ACCESS]  Step N — {UI navigation, click, or field-selection reference}
 ```
 
 If there are no flagged issues in a category, omit that category. If there are no issues at all, print `No issues found.`
@@ -157,7 +170,7 @@ If there are no flagged issues in a category, omit that category. If there are n
 
 ## Scoring Notes
 
-- Compute the overall score as the simple average of all 10 scores, rounded to one decimal place.
+- Compute the overall score as the simple average of all 11 scores, rounded to one decimal place.
 - Do not modify the file being scored.
 - Do not write any output files.
 - Do not suggest rewrites unless the user asks — just score and flag.
