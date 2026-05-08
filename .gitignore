@@ -9,3 +9,7 @@ plans/
 output-prompts/
 agent-release-notes/
 apendix/
+decrypted-configs/
+
+# Encrypted configuration exports
+*.pve
