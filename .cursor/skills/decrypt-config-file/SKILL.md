@@ -11,11 +11,18 @@ Decodes a Vesta `.pve` export (base64 + `VESTA_ADMIN_CONFIGURATION_EXPORT:` pref
 
 1. **Identify the `.pve` file** — use the path the user provides or the most recently mentioned `.pve` file.
 
-2. **Run the script** — always pass the workspace root path:
+2. **Locate the skill directory** — find where this skill is installed (usually `.cursor/skills/decrypt-config-file/`).
+
+3. **Run the script** — construct the path relative to the skill location:
 
 ```bash
-python3 "/Users/sijaiswal/Sids Brain/.cursor/skills/decrypt-config-file/scripts/decrypt_and_split.py" "<path/to/file.pve>" "/Users/sijaiswal/Sids Brain"
+python3 "<skill_directory>/scripts/decrypt_and_split.py" "<path/to/file.pve>" "<workspace_root>"
 ```
+
+Where:
+- `<skill_directory>` is the parent directory of this SKILL.md file
+- `<path/to/file.pve>` is the .pve file to decrypt
+- `<workspace_root>` is the workspace root directory (e.g., `/Users/username/MyProject`)
 
 The script will:
 - Decode the config and extract the version name (e.g., `V1252`, `V4732`)
@@ -31,7 +38,7 @@ The script will:
 ## Output structure
 
 ```
-/Users/sijaiswal/Sids Brain/
+<workspace_root>/
   decrypted-configs/
     V1252/                           ← version-specific folder
       V1252_5_07_...-full.json       ← complete config, pretty-printed
@@ -45,8 +52,21 @@ The script will:
         XX-NonVersionedRefs.json
 ```
 
+## Example
+
+If the skill is installed at `.cursor/skills/decrypt-config-file/` and the workspace is `/Users/alice/MyProject`:
+
+```bash
+python3 ".cursor/skills/decrypt-config-file/scripts/decrypt_and_split.py" \
+  "V1252.pve" \
+  "/Users/alice/MyProject"
+```
+
+Output will be created at: `/Users/alice/MyProject/decrypted-configs/V1252/`
+
 ## Notes
 
 - The script handles both the `VESTA_ADMIN_CONFIGURATION_EXPORT:` prefix and raw base64.
 - Sections with 0 items (e.g. TaskTemplates when not exported) still produce files — that is expected.
 - If the `.pve` file is very large (>10 MB), the script may take a few seconds; that is normal.
+- The script is portable — it will work on any system as long as Python 3 is installed.
