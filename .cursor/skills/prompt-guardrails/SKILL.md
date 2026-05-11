@@ -61,6 +61,7 @@ Use these exact phrasings. Non-canonical phrasings are a scoring defect.
 | Make a UW decision | `Set loan decision to [decision]` |
 | Read loan data | `Use search_loan_data_model to get [field/entity]` |
 | List objectives | `Use list_objectives to find [objective name]` |
+| Accept a document | `Mark the [document type] as Accepted` |
 | Complete the task | `finish with status=completed` |
 | Do not complete the task | `Do not complete the task.` — valid terminal step when the prompt intentionally leaves the task open; must be preceded by a `Write a note stating [reason]` |
 
@@ -153,6 +154,12 @@ When invoked directly ("prompt guardrails", "check guardrails", "audit this prom
 ### Step 2 — Read the file
 
 Read the full contents. Note the number of labeled steps and whether each step is structured with a clear action, lookup target, and result handling.
+
+**Document type check:** For every document referenced in the prompt, confirm you know its exact document type name as it appears in Vesta (e.g., "1003 URLA", "Closing Disclosure", "Note"). If any document is referenced by a generic or informal name (e.g., "the doc", "the form", "the report"), stop and ask the user:
+
+> "What is the exact document type name for '[informal name]' as it appears in Vesta?"
+
+Do not proceed to Step 3 until all document type names are confirmed.
 
 ### Step 3 — Check every rule and mistake
 
