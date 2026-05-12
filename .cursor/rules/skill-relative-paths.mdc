@@ -1,0 +1,38 @@
+---
+description: When creating or editing skills, always use relative paths for all file, folder, and skill references so skills are portable and shareable.
+globs: **/*.SKILL.md, .cursor/skills/**/SKILL.md
+alwaysApply: true
+---
+
+# Skill Paths Must Always Be Relative
+
+When writing or updating any skill (`SKILL.md`), every path reference must be **relative to the workspace root** — never a hardcoded absolute path. This applies to all references, not just scripts.
+
+## Rule
+
+❌ **BAD** — absolute paths, break on any other machine:
+```
+'/Users/sijaiswal/Sids Brain/scripts/sync-vesta-config.py'
+'/Users/sijaiswal/Sids Brain/.cursor/skills/some-skill/SKILL.md'
+'/Users/sijaiswal/Sids Brain/Vesta/config/objectives/'
+```
+
+✅ **GOOD** — relative paths, portable and shareable:
+```
+'scripts/sync-vesta-config.py'
+'.cursor/skills/some-skill/SKILL.md'
+'Vesta/config/objectives/'
+```
+
+## Applies To
+
+- External scripts (Python, shell, etc.)
+- References to other skill folders or `SKILL.md` files
+- Folder paths (input dirs, output dirs, config dirs)
+- Shell commands embedded in skills (`cd`, `python3`, file reads/writes)
+- `importlib.util.spec_from_file_location` calls
+- Notes, footers, and any instructional text that mentions a path
+
+## When cd Is Needed
+
+If the skill must `cd` to the workspace root before running, use the workspace path from the always-applied `sids-brain-location` rule (`/Users/sijaiswal/Sids Brain`) only inside the `cd` command — all subsequent paths in that same command block must be relative.

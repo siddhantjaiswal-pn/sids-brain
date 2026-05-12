@@ -13,8 +13,8 @@ Two-phase sync for the Vesta configuration knowledge base:
       with a 4-second delay between calls, and writes README.md + task .md files.
 
 Usage:
-    python3 scripts/sync-vesta-config.py            # Phase 1 + Phase 2
-    python3 scripts/sync-vesta-config.py --index-only  # Phase 1 only
+    python3 .cursor/skills/sync-vesta-config/sync-vesta-config.py            # Phase 1 + Phase 2
+    python3 .cursor/skills/sync-vesta-config/sync-vesta-config.py --index-only  # Phase 1 only
 
 Environment variables:
     VESTA_BASE_URL            — defaults to http://localhost:3001
@@ -45,8 +45,8 @@ PROCESS_VERSION_UUID = os.environ.get(
     "f7ea095c-6465-4d8c-afb2-7e1410651fbc",
 )
 
-WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
-OBJECTIVES_LIST_PATH = Path(__file__).resolve().parent / "objectives-list.json"
+WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+OBJECTIVES_LIST_PATH = WORKSPACE_ROOT / "scripts" / "objectives-list.json"
 OBJECTIVES_DIR = WORKSPACE_ROOT / "Vesta" / "config" / "objectives"
 
 
@@ -592,7 +592,7 @@ def write_index(list_items: list, detail_synced_slugs: Optional[set] = None) -> 
         "# Vesta Objectives — Knowledge Base Index",
         "",
         f"_Auto-generated from the objective-list endpoint. {total} objective(s).  ",
-        "Do **not** edit manually — run `scripts/sync-vesta-config.py` to refresh._",
+        "Do **not** edit manually — run `.cursor/skills/sync-vesta-config/sync-vesta-config.py` to refresh._",
         "",
         "| Objective | External ID | Entity | Loan Stages | Tasks | Actions | AI Agent | Auto-Complete | Last Modified |",
         "|-----------|-------------|--------|-------------|-------|---------|----------|---------------|---------------|",

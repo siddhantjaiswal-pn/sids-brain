@@ -39,7 +39,7 @@ cd "/Users/sijaiswal/Sids Brain" && python3 -c "
 import json
 import importlib.util
 
-spec = importlib.util.spec_from_file_location('sync_vesta_config', 'scripts/sync-vesta-config.py')
+spec = importlib.util.spec_from_file_location('sync_vesta_config', '.cursor/skills/sync-vesta-config/sync-vesta-config.py')
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
@@ -79,7 +79,7 @@ print(f'Files written to: {obj_dir}')
 ```
 
 > **Note**: `importlib.util` is required — `sys.path.insert` fails because
-> `sync-vesta-config.py` uses hyphens and cannot be imported as a Python module.
+> `sync-vesta-config.py` uses hyphens and cannot be imported directly as a Python module.
 
 ### Step 3: Report results
 
@@ -108,4 +108,4 @@ Vesta/config/objectives/
 - The `config.json` file is **never modified** — it is read-only input.
 - Existing `README.md` and task files in the objective directory are overwritten.
 - Slugs are derived from `externalIdentifier` (camelCase → kebab-case), which is stable.
-- If the script fails to load, verify `scripts/sync-vesta-config.py` exists in the workspace root.
+- If the script fails to load, verify `.cursor/skills/sync-vesta-config/sync-vesta-config.py` exists.
