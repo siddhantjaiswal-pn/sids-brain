@@ -1,9 +1,7 @@
 ---
 description: When creating or editing skills, always use relative paths for all file, folder, and skill references so skills are portable and shareable.
-globs: **/*.SKILL.md, .cursor/skills/**/SKILL.md
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Skill Paths Must Always Be Relative
 
 When writing or updating any skill (`SKILL.md`), every path reference must be **relative to the workspace root** — never a hardcoded absolute path. This applies to all references, not just scripts.
