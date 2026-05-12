@@ -38,13 +38,13 @@ Classify each file:
 ## Phase 2 — Score All Instruction Tasks
 
 Read the full scoring rubric from:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/score-prompt/SKILL.md`
+`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-score/SKILL.md`
 
 **If there is only 1 instruction task**, read and score it directly in the main agent.
 
 **If there are 2 or more instruction tasks**, launch one background subagent per task using `subagent_type: generalPurpose` — all in a single message (parallel). Each subagent prompt must:
 
-1. Include the full contents of `/Users/sijaiswal/Sids Brain/.cursor/skills/score-prompt/SKILL.md` verbatim.
+1. Include the full contents of `/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-score/SKILL.md` verbatim.
 2. Include the full contents of the task `.md` file being scored.
 3. Instruct the subagent to return **only** the scorecard table and the full flagged issues list — no rewrites, no file writes.
 
@@ -79,7 +79,7 @@ After printing the scorecard, ask:
 ## Phase 3 — Parallel Rewrites
 
 Read the full designer rules and action vocabulary from:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/vesta-prompt-designer/SKILL.md`
+`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-guardrails/SKILL.md`
 
 For each instruction task, launch a **separate background subagent** using `subagent_type: generalPurpose`. Launch all subagents in a single message (parallel).
 
@@ -95,7 +95,7 @@ Save to: /Users/sijaiswal/Sids Brain/output-prompts/{objective-name}/{task-slug}
 ---
 ## DESIGNER RULES
 
-[Paste the Core Rules and Action Vocabulary sections from vesta-prompt-designer/SKILL.md verbatim]
+[Paste the Core Rules and Action Vocabulary sections from prompt-guardrails/SKILL.md verbatim]
 
 ---
 ## ORIGINAL FILE CONTENT
