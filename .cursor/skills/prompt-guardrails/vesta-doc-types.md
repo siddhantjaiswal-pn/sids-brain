@@ -1,0 +1,676 @@
+# Vesta Document Types
+
+> **Canonical source of all valid document type names in Vesta.**
+> 
+> When writing agent task prompts, document references must use the exact name from this list followed by " document" (e.g., "Review the Credit Report document").
+
+---
+
+## Document Types (Alphabetical)
+
+- 10 Year Home Owners Warranty
+- 1003
+- 1008
+- 184 PIH Firm Commitment
+- 2020 1040
+- 2020 1065
+- 2020 1098
+- 2020 1099
+- 2020 1120
+- 2020 1120-S
+- 2020 5498
+- 2020 Business Tax Returns
+- 2020 Business Tax Returns - K1
+- 2020 W-2
+- 2021 1040
+- 2021 1065
+- 2021 1098
+- 2021 1099
+- 2021 1120
+- 2021 1120-S
+- 2021 5498
+- 2021 Business Tax Returns
+- 2021 Business Tax Returns - K1
+- 2021 W-2
+- 2022 1040
+- 2022 1065
+- 2022 1098
+- 2022 1099
+- 2022 1120
+- 2022 1120-S
+- 2022 5498
+- 2022 Business Tax Returns
+- 2022 Business Tax Returns - K1
+- 2022 W-2
+- 2023 1040
+- 2023 1065
+- 2023 1098
+- 2023 1099
+- 2023 1120
+- 2023 1120-S
+- 2023 5498
+- 2023 Business Tax Returns
+- 2023 Business Tax Returns - K1
+- 2023 Business Tax Returns w/Schedules
+- 2023 W-2
+- 2023 Year End Paystubs
+- 2024 1040
+- 2024 1065
+- 2024 1098
+- 2024 1099
+- 2024 1120
+- 2024 1120-S
+- 2024 5498
+- 2024 Business Tax Returns
+- 2024 Business Tax Returns - K1
+- 2024 Business Tax Returns w/Schedules
+- 2024 W-2
+- 2024 Year End Paystubs
+- 2025 1040
+- 2025 1065
+- 2025 1098
+- 2025 1099
+- 2025 1120
+- 2025 1120-S
+- 2025 5498
+- 2025 Business Tax Returns
+- 2025 Business Tax Returns - K1
+- 2025 Business Tax Returns w/Schedules
+- 2025 W-2
+- 2025 Year End Paystubs
+- 26-0503 Federal Collection
+- 26-1817 Unmarried Surviving Spouses Form
+- 26-8937 Verification of Benefit
+- 26-8978 Borrower Rights
+- 3555-21 Conditional Commitment
+- 401k statement
+- ARM Disclosure
+- AVM Appraisal Report
+- Accessory Unit Income Verification
+- Acknowledgement of Receipt of Disclosures
+- Active Military Orders
+- Addendum to HUD-1
+- Additional Account Statement
+- Additional Income Source Documents
+- Additional Real Estate Verification
+- Address Verification
+- Adverse Action Package
+- Agricultural Exemption - Removal Letter
+- Alternative Credit
+- Amortization Schedule
+- Annuity Income
+- Annuity Income Verification
+- Anti-Coercion (Insurance)
+- Application Disclosure
+- Appraisal
+- Appraisal - EAD SSR
+- Appraisal - Fannie SSR
+- Appraisal - Freddie SSR
+- Appraisal AIR/HVCC Cert
+- Appraisal Compliance Certificate
+- Appraisal Desk Review Report
+- Appraisal Engagement Letter
+- Appraisal Invoice
+- Appraisal Review Worksheet
+- Appraisal Transfer
+- Appraisal Update and/or Completion Report (1004D)
+- Appraisal Waiver
+- Asset - Miscellaneous
+- Asset Distribution Verification
+- Asset Statements
+- Asset Summary
+- Asset Verification Report
+- Assignment
+- Assumption Agreement
+- Attorney Disclosure
+- Attorney opinion Fee Statement
+- Authorization to Pay
+- Automobile Allowance
+- Avoidance of Lien Letter
+- BIA Lease Approval
+- Bank Statement
+- Bank Statement - Miscellaneous
+- Bankruptcy Papers
+- Benefit Statement
+- Bill of Sale - Sale of Asset
+- Birth Certificate
+- Boarder Income Documentation
+- Bona Fide Emergency Waiver
+- Bond Certificate
+- BorrowSmart Program Documentation
+- Borrower Affidavit
+- Borrower Identification
+- Borrower Statement Discrepancies
+- Borrower Statement Employment Gap
+- Borrower Statement Previous Employment
+- Borrowers Certification and Authorization
+- Borrowers intent to return letter
+- Broker Fee Agreement
+- Brokerage Account Statement
+- Builder Contract
+- Business Balance Sheet
+- Business Profit and Loss Statement
+- Business Tax Returns Filing Extensions
+- Business Tax Transcripts
+- Buydown Agreement
+- C-Corp Ownership Verification
+- CA Inspection of Exterior Elevated Elements
+- CA Per Diem Interest Disclosure
+- CA Repairs to Exterior Elevated Elements
+- CAIVRS Report
+- CEMA Analysis
+- CEMA Authorization
+- CEMA Document
+- CEMA Exhibits
+- CEMA Gap Mortgage
+- CEMA Gap Note
+- Cancelled check
+- Capital Gain Income
+- Certificate of Occupancy
+- Certificate of Occupancy - Title
+- Change of circumstances letter
+- Child Support Alimony Income
+- Child Support Order
+- Closing Disclosure
+- Closing Disclosure (Seller)
+- Closing Disclosure Package
+- Closing Instructions
+- Closing Package
+- Closing Protection Letter
+- Closing Worksheet
+- Commanding Officer Certification
+- Compliance Agreement
+- Compliance Report
+- Concession support
+- Conditional Approval Letter
+- Conditional Commitment
+- Condo - Other Documents
+- Condo Certificate
+- Condo Master Insurance Policy
+- Construction Cost Breakdown
+- Contractors Affidavit
+- Corporate Resolution
+- Credit Card Authorization
+- Credit Card Statement
+- Credit Directive Letter
+- Credit Explanation
+- Credit Refresh Report
+- Credit Report
+- Credit Report - Non-Borrowing Spouse
+- Credit Score Disclosure
+- Credit Score Matrix
+- Credit Supplement
+- Credit Supporting Documentation
+- Current Year Income Clarification
+- DHHL Certification of Eligibility
+- DU/DO Findings
+- Death Certificate
+- Death Certificate (Title)
+- Debt Monitor Report
+- Deed
+- Deed of Trust
+- Delayed Financing Supporting Documents
+- Deposit Slips
+- Disability Award Letter
+- Disability Income Verification
+- Disaster Inspection
+- Discount Point Fee Disclosure
+- Distribution Letter for Employment Related Asset Income
+- Divorce Decree
+- Divorce Decree (Title)
+- Divorce decree_alimony_child support
+- ECOA
+- EarlyCheck Results
+- Earnest Money Deposit (EMD) Documentation
+- Earnest Money Deposit Source
+- Earning Statement
+- Electronic Signature Audit Log
+- Employer Agreement
+- Employer Bonus Confirmation
+- Employer Relocation Statement
+- Employers Intent to return Letter
+- Employment Clarification
+- Employment Contract
+- Employment History
+- Employment Offer Letter
+- Energy Efficient Mortgage Work Sheet
+- Engineer's Certificate
+- Environment Review Record
+- Errors & Omissions
+- Escrow Agreement
+- Escrow Deposit Receipt
+- Escrow Disclosure
+- Escrow Holdback
+- Escrow Instructions
+- Estimated Closing Cost Worksheet
+- Estimated Closing Disclosure with Gift Transfer
+- Evidence of Alimony
+- Evidence of Annuity
+- Evidence of Child Support
+- Evidence of Paid Collection
+- Evidence of Pension
+- Evidence of Trust
+- Executed Closing Documents
+- Executed NORTC
+- Existing/Prior Property Closing Disclosure
+- FHA (HUD) Condo Approval
+- FHA (HUD) HOA Questionnaire
+- FHA 92900A
+- FHA Amendatory Clause
+- FHA Case Assignment
+- FHA Condominium Checklist
+- FHA HUD-1 Settlement Certificate
+- FHA Identity of Interest Certification
+- FHA Settlement Certification
+- FHLMC CPA (Condo Project Advisor)
+- FHLMC Established Checklist
+- FHLMC Streamline Checklist
+- FNMA CPM (Condo Project Manager) Approval
+- FNMA Full Condominium Checklist
+- FNMA Limited Condominium Checklist
+- Fair Lending
+- Fannie Mae UCD Collection Findings Report
+- Federal Income Tax Returns
+- Fee Quote
+- Fee Worksheet
+- Fidelity Insurance Policy
+- First Payment Letter
+- Flood Certificate
+- Flood Hazard Notice
+- Flood Insurance Policy
+- Flood Report
+- Flood Zone Dispute
+- For Your Protection: Get a Home Inspection
+- Foreign Passport
+- Form 4506-C
+- Form 8821
+- Foster Care Income Documentation
+- Fraud Report
+- Free and clear verification
+- Freeze/Close Letter
+- Full HOA Questionnaire
+- Furlough Documentation
+- Furlough Documentation Temporary
+- GUS Findings
+- General Disclosure
+- Gift Letter
+- Gift Transfer Documentation
+- Government ID
+- HCDR Certificate
+- HELOC: Important Terms of Our Home Equity
+- HMDA Report
+- HO6 Insurance Policy
+- HOA Budget
+- HOA Certificate
+- HOA Contact Details
+- HOEPA/Section 32 Disclosure
+- HOI - RCV
+- HUD-50111-A
+- HUD-50132
+- HUD-92051
+- HUD-92541
+- HUD-92544
+- HUD-92561
+- HUD-92900-A Addendum
+- HUD/VA Addendum to URLA (HUD 92900-A)
+- Hazard Disclosure
+- Hazard Insurance Bill
+- Heirship Affidavit
+- Home Education Certification
+- Home Ready Education Certificate of Completion
+- Homeowners Association (HOA) Statement
+- Homeowners Insurance Policy
+- Homeownership Counseling Disclosure
+- House Plans
+- Household Member 4506C
+- Household Member Authorization Form
+- Household Member Tax Transcripts
+- Household Members Details
+- Housing Allowance - Continuance
+- Housing Allowance Receipt
+- Housing Allowance Verification
+- IBTS
+- IBTS Inspection Fee Receipt
+- IRA Distribution Verification
+- IRA statement
+- ITIN Card
+- Important Notice to Homebuyers (HUD 92900-B)
+- Impound Authorization
+- Income - Miscellaneous
+- Income - Supporting Documentation
+- Income Based Repayment (IBR) Plan
+- Income Letter of Explanation - Foster Care Income
+- Income Retirement statement
+- Income Summary
+- Income Verification Consent Document
+- Informed Consumer Choice Disclosure
+- Initial Disclosures Package
+- Initial MLDS (RE-885)
+- Ink Signed Authorization
+- Inquiry Letter
+- Inspectors License
+- Installment Agreement
+- Instrument Addendum
+- Insurance Declarations Page
+- Insurance-Related Disclosure
+- Intent to Proceed
+- Investment Account Statement
+- Investor-Specific Disclosure
+- Itemization
+- Judgement or lien release
+- LCLA Feedback Certificate
+- LPA Findings
+- LQA Feedback Certificate
+- Land Trust - Documents
+- Lease Agreement
+- Leasehold Agreement
+- Lender Current Certification
+- Lender Custom Disclosure
+- Lenders Loan Quality Certification
+- Letter from Trustee
+- Letter of Explanation
+- Letter of Explanation - Address History
+- Letter of Explanation - Assets
+- Letter of Explanation - Document Discrepancies
+- Letter of Explanation - Employment Gap
+- Letter of Explanation - From Owner
+- Letter of Explanation - Income
+- Letter of Explanation - No Primary Housing Expense
+- Letter of Explanation - Occupancy
+- Letter of Explanation - borrower declaration
+- Life of Loan Flood Certificate
+- Limited HOA Questionnaire
+- Limited Power of Attorney
+- Loan Agreement
+- Loan Estimate
+- Loan Modification
+- Loan Options Disclosure (Anti-Steering)
+- Loan Servicing Disclosure
+- Lock Confirmation
+- Lost Note Affidavit
+- MA Lead Paint Indemnification Agreement
+- Manufactured Home Affidavit of Affixation
+- Manufactured Home Documents
+- Marital Settlement Agreement
+- Marriage Certificate
+- Marriage Certificate (Title)
+- Master Insurance Policy
+- Military Records DD 214
+- Military Service Documentation
+- Military Service Income Continuance
+- Military Supporting Documents
+- Military Transfer Orders
+- Miscellaneous Statement
+- Modification Inspection
+- Money Transfer Evidence
+- Monies Due Affidavit
+- Mortgage Insurance Certificate
+- Mortgage Insurance Quote
+- Mortgage Loan Origination Agreement
+- Mortgage Note or Deed
+- Mortgage Note_Deed
+- Mortgage Payment Coupon
+- Mortgage Statement
+- Mortgage Survey
+- Mortgagee Clause
+- Motivation Letter
+- MyBiz Verification of Employment
+- NY Tax Escrow Account Designation
+- New Assignment of Mortgage
+- Non Borrower Household Income Letter
+- Non-permanent resident alien card
+- Note
+- Note & Deed for Subordinate Lien
+- Notes Receiveable Income - Proof of Receipt
+- Notice Concerning the Extension of Credit
+- Notice of Commencement
+- Notice of Furnishing Negative Information
+- Notice to Homeowner
+- OFAC
+- Occupancy Certification
+- Off-Base Housing Permit
+- Offer Letter-Contingencies Removed
+- Offer letter
+- Official Court Order
+- Original Appraisal
+- Original Deed of Trust
+- Original Note
+- Original Note (Port)
+- Other Appraiser Document
+- Other Disclosure
+- Other Disclosure Package
+- Other documentation
+- Owner's Title Policy
+- PACE/HERO payoff
+- Partial Claim Payoff
+- Partial Claim Satisfaction
+- Partnership Agreement
+- Patriot Act Disclosure
+- Payment Letters
+- Payoff Statement
+- Payoff demand letter
+- Paystubs
+- Pension Income Verification
+- Permanent Residence Card (Green Card)
+- Permanent resident alien card
+- Personal Tax Return w/ Schedule 2020
+- Personal Tax Return w/ Schedule 2021
+- Personal Tax Return w/ Schedule 2022
+- Personal Tax Return w/ Schedule 2023
+- Personal Tax Return w/ Schedule 2024
+- Personal Tax Return w/ Schedule 2025
+- Personal Tax Returns
+- Personal Tax Returns Filing Extensions
+- Personal Tax Transcripts
+- Power of Attorney
+- Pre-Approval Checklist
+- Pre-Approval Letter
+- Pre-Disclosure Attestation
+- Pre-qualification letter
+- Prelim ALTA
+- Prelim CD
+- Preliminary Title Report
+- Previous Loan Assignment of Mortgage
+- Previous Loan Mortgage
+- Previous Loan Note
+- Prior Year Income Clarification
+- Private Mortgage Insurance Disclosure
+- Private Road Maintenance Agreement
+- Probate Documents or Will
+- Proof of Boarders Residency in Property
+- Proof of Foster Care History
+- Proof of Value - Sale of Asset
+- Property - Miscellaneous
+- Property Inspection Report
+- Property Profile
+- Property Tax Bill
+- Public Assistance Documentation - Continuance
+- Public Assistance Letter
+- Purchase Contract
+- Purchase Contract Addendum
+- Purchase Offer Letter
+- Quit Claim Deed - Fully Executed Deed
+- Quit Claim Deed - Property Vested
+- Quit Claim Deed - Title
+- RESPA
+- Receipt of Security deposit
+- Refinance Savings Worksheet
+- Relationship Affidavit
+- Rental Agreement
+- Rental Income Verification
+- Retirement Account Statement
+- Rider to Note
+- Rider to Security Instrument
+- Right To Cancel
+- Right to Receive Copy of Appraisal
+- Royalties - Evidence of receipt for at least 12 months
+- Royalties - support for 3-year continuance of the royalty
+- Royalty Agreement
+- SCRA
+- SSA-89
+- SSA-89 Verification Report
+- Sale of property at closing - Estimated CD
+- Sale of property at closing - Final CD
+- Sales Concession
+- Sales Contract
+- Satisfaction of judgement or lien release
+- School Transcripts
+- Seasoning Payments
+- Security Instrument
+- Separation Agreement
+- Separation Agreement (Title)
+- Settlement Statement for Sold Property
+- Shared Well Agreement
+- Signature / Name Affidavit
+- Social Security Card
+- Social Security Disability Verification
+- Social Security Income Award Letter
+- Social Security Income Verification
+- Soft Pull Credit Report
+- Source of funds
+- South Carolina Attorney/Insurance Preference Form
+- Statement of Information
+- Student Transcripts
+- Subordination Agreement
+- Subordination Requirements
+- Supplemental Letter
+- Survey/Plat Map
+- TIL Total Payments Itemization
+- TX Affidavit of Fair Market Value of Homestead Property
+- TX Home Equity Affidavit and Agreement
+- Tangible Net Benefit
+- Tax Authorization
+- Tax Certificate
+- Tax Info/Public Records
+- Tax Lien Statement/Demand
+- Tax Transcripts
+- Tax and Insurance Information Sheet
+- Taxpayer Consent Form
+- Teacher frequency of pay document
+- Temporary leave - Employer approval document
+- Termite Inspection
+- Termite Report
+- Termite Soil Report
+- Terms of Repayment for Liability
+- Terms of Withdrawal
+- Texas Home Equity Affidavit and Agreement
+- Three year continuance
+- Title - Miscellaneous
+- Title Affiliate Invoice
+- Title Clear to Close Cert
+- Title Closing Disclosure
+- Title Commitment
+- Title Deed
+- Title Disbursement Ledger
+- Title Insurance Policy
+- Title Other
+- Title Policy Exception
+- Title Property Report
+- Title Settlement Statement
+- Title Signing Confirmation
+- Tribal Affiliation Document
+- Tribal Council Mortgage Approval
+- Tribal Membership Card
+- Trust Agreement
+- Trust Agreement (Title)
+- Trust Certification
+- Trust Doc Income
+- Trust Documentation
+- Trust Tax Returns
+- Trust income Verification
+- Truth in Lending Disclosure
+- UCC Payoff
+- UCC Solar agreement
+- UCC Termination
+- UFMIP Refund Validation
+- US Driver's License
+- US Passport
+- USCIS Form I-797, Notice of Action
+- USDA - Miscellaneous
+- USDA Household Members Income Verification
+- USDA Lender Record Change (3555-11)
+- USDA Loan Note Guarantee (3555-17)
+- USDA Request for Conditional Commitment 3555-21
+- USDA Request for Loan Guarantee (3555-21)
+- Uncategorized
+- Undisclosed Debt Acknowledgment
+- Unemployment Income Verification
+- Upfront Deposit Payment
+- Upfront Deposit Refund
+- Utility Bills
+- VA (VA-LGY) Condo Approval
+- VA - Alive and Well Affidavit
+- VA - CABO Lead/Water Certification
+- VA - Certificate of Eligibility
+- VA - LIN Transfer Documents
+- VA - Miscellaneous
+- VA - NGB-22
+- VA - Nearest Relative
+- VA - Net Tangible Benefit Form
+- VA Amendatory/Escape Clause Form
+- VA Benefit Income Verification
+- VA Benefit Letter
+- VA Certification of Eligibility
+- VA Child Care Statement
+- VA Escape Clause
+- VA Form 26-0592 (Counseling Checklist for Military Homebuyers)
+- VA Form 26-1839 (Compliance Inspection Report)
+- VA Form 26-1849 (Escrow Agreement for Postponed Exterior Onsite Improvements)
+- VA Form 26-1859 (Warranty of Construction Completion)
+- VA Form 26-6393 (Loan Analysis)
+- VA Form 26-8497 (Request for Verification of Employment)
+- VA Form 26-8497a (Request for Verification of Deposit)
+- VA Form 26-8923 (Interest Rate Reduction Refinancing Loan Worksheet)
+- VA LIN
+- VA Letter of Explanation
+- VA Loan Identification Number
+- VA Loan Quality Certificate
+- VA Loan Summary Sheet
+- VA Non-IRRRL Refinance Comparison Certification
+- VA Rate Reduction Certification
+- VA Report and Certification of Loan Disbursement
+- VVOE
+- Verification of Child Care Expense Form
+- Verification of Dependent Expenses
+- Verification of Deposit
+- Verification of Employer Assistance
+- Verification of Employment
+- Verification of Income
+- Verification of Mortgage
+- Verification of Rent
+- Vesting Certification
+- Vesting Deed
+- Veterans Affairs Misc
+- Visa
+- W-9
+- WVOE
+- Warranty Deed
+- Warranty of Completion (VA)
+- Warranty of Completion- Title
+- Well and Septic Health Authority Certification
+- Windstorm Coverage Policy
+- Windstorm Insurance Bill
+- Wire Instructions
+- Wood Infestation Report
+- Written List of Providers
+- Year to date Unemployment Information
+- Your Home Loan Toolkit
+
+---
+
+**Total Document Types: 682**
+
+---
+
+## Usage in Agent Prompts
+
+When referencing a document in a Vesta agent task prompt:
+
+1. Use the exact name from this list
+2. Append " document" to the name
+3. Examples:
+   - ✅ "Review the Credit Report document"
+   - ✅ "Check if 2024 W-2 document is uploaded"
+   - ✅ "Mark the Closing Disclosure document as Accepted"
+   - ❌ "Review the credit report" (missing "document")
+   - ❌ "Check if W-2 is uploaded" (missing "document")

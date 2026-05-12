@@ -32,9 +32,11 @@ Ask the user to provide their complete prompt. They can:
 ### Step 2 — Run prompt-guardrails
 
 Read and follow:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-guardrails/SKILL.md`
+`../prompt-guardrails/SKILL.md`
 
 Run the full guardrail audit on the collected prompt. Render the complete audit report (R1–R7, M1–M5 table + Violations section).
+
+**Document name validation:** If any document is referenced in the prompt, read `../prompt-guardrails/vesta-doc-types.md` and verify that all document names match the exact names from the canonical list. Flag any mismatches in the audit report.
 
 ### Step 3 — Ask clarifying questions
 
@@ -44,6 +46,7 @@ Based on every FAIL and WARN in the audit report, ask the user targeted clarifyi
 - "Step 5 references a document but doesn't name it — which document should the agent review here?"
 - "The escalation is missing a reason — what reason should the agent state when escalating?"
 - "This step implies the agent will know what a prior task found — where should it look up this data directly?"
+- "You mentioned 'W-2' but the exact Vesta document name is '2024 W-2' — should I use the year-specific name or a generic reference?"
 
 Wait for the user's full response before proceeding.
 
@@ -54,6 +57,8 @@ Using the original prompt, the guardrail findings, and all clarifying answers fr
 1. Rewrite the prompt as fully detailed, step-by-step agent instructions
 2. Apply all rules from `prompt-guardrails` (R1–R7, M1–M5, action vocabulary, step structure):
    - Every step must name the exact action, tool, field, or document
+   - Use natural language for field names (e.g., "Closing Date", "Borrower's Monthly Income")
+   - All document references must include " document" suffix and use exact names from `../prompt-guardrails/vesta-doc-types.md`
    - Every IF must have a defined outcome for both branches
    - Every path must end in `status=completed` or an explicit escalation
    - Use canonical action vocabulary (Set, Write a note, Escalate, Review the, etc.)
@@ -69,13 +74,13 @@ Apply any requested changes, then wait for confirmation before scoring.
 ### Step 5 — Score and save
 
 Once confirmed, read and follow:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-score/SKILL.md`
+`../prompt-score/SKILL.md`
 
 Run `prompt-score` on the confirmed prompt. Render the full scorecard.
 
 Calculate: `average = total ÷ 12`
 
-- **If average > 9.0** → save to `/Users/sijaiswal/Sids Brain/output-prompts/{task-name}.md` and confirm the path to the user. Done.
+- **If average > 9.0** → save to `../../output-prompts/{task-name}.md` and confirm the path to the user. Done.
 - **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
 
 ---
@@ -92,9 +97,11 @@ Ask the user to either:
 ### Step 2 — Run prompt-guardrails
 
 Read and follow:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-guardrails/SKILL.md`
+`../prompt-guardrails/SKILL.md`
 
 Run the full guardrail audit on the prompt. Render the complete audit report.
+
+**Document name validation:** If any document is referenced in the prompt, read `../prompt-guardrails/vesta-doc-types.md` and verify that all document names match the exact names from the canonical list. Flag any mismatches in the audit report.
 
 ### Step 3 — Rewrite based on findings
 
@@ -102,6 +109,8 @@ Apply fixes for all FAIL and WARN items from the audit:
 
 - Add missing escalation paths with explicit trigger conditions and reasons
 - Replace vague instructions with specific actions, fields, or documents
+- Use natural language for field names (e.g., "Closing Date", not "closing_date")
+- Ensure all document names match the exact names from `../prompt-guardrails/vesta-doc-types.md` and include " document" suffix
 - Handle all unhandled IF branches
 - Remove UI references — rewrite as data lookups
 - Name all documents explicitly
@@ -113,13 +122,13 @@ Present the rewritten prompt to the user.
 ### Step 4 — Score and save
 
 Read and follow:
-`/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-score/SKILL.md`
+`../prompt-score/SKILL.md`
 
 Run `prompt-score` on the rewritten prompt. Render the full scorecard.
 
 Calculate: `average = total ÷ 12`
 
-- **If average > 9.0** → save to `/Users/sijaiswal/Sids Brain/output-prompts/{task-name}.md` and confirm the path to the user. Done.
+- **If average > 9.0** → save to `../../output-prompts/{task-name}.md` and confirm the path to the user. Done.
 - **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
 
 ---
@@ -134,13 +143,13 @@ Track the attempt count. Maximum **3 attempts total** (including the first score
 2. Rewrite the prompt to address every flagged issue. Priority order:
    - Unhandled branches (R3) — define the missing outcome for every IF
    - Missing escalation paths (R4, M3) — add trigger + reason for every gap case
-   - Vague language (M2) — replace with specific field names, document names, or criteria
-   - Unnamed documents (M5) — use full document type names
+   - Vague language (M2) — replace with specific field names (natural language), document names (exact from vesta-doc-types.md), or criteria
+   - Unnamed documents (M5) — use full document type names from `../prompt-guardrails/vesta-doc-types.md` with " document" suffix
    - Dangling paths (R6) — every path must end in `status=completed` or an escalation
    - UI references (R7) — rewrite as `Use search_loan_data_model to get [field]`
 3. Re-run `prompt-score` on the revised prompt. Render the updated scorecard.
 4. Calculate `average = total ÷ 12`.
-5. **If average > 9.0** → save to `/Users/sijaiswal/Sids Brain/output-prompts/{task-name}.md`. Done.
+5. **If average > 9.0** → save to `../../output-prompts/{task-name}.md`. Done.
 6. **If average ≤ 9.0 and attempts < 3** → increment attempt count and repeat from step 1.
 7. **If average ≤ 9.0 and attempts = 3** → stop. Report:
 
@@ -155,7 +164,7 @@ Do NOT save automatically — wait for the user's explicit decision.
 
 | Property      | Value                                                                     |
 | ------------- | ------------------------------------------------------------------------- |
-| Save location | `/Users/sijaiswal/Sids Brain/output-prompts/`                             |
+| Save location | `../../output-prompts/` (relative to skill folder)                        |
 | File name     | Task name slug from the prompt title (e.g., `closing-date-adjustment.md`) |
 | File contents | Final rewritten prompt only — no scorecard, no audit report               |
 
@@ -163,5 +172,5 @@ Do NOT save automatically — wait for the user's explicit decision.
 
 ## Referenced Skills
 
-- Guardrails audit: `/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-guardrails/SKILL.md`
-- Scoring: `/Users/sijaiswal/Sids Brain/.cursor/skills/prompt-score/SKILL.md`
+- Guardrails audit: `../prompt-guardrails/SKILL.md`
+- Scoring: `../prompt-score/SKILL.md`
