@@ -19,7 +19,7 @@ Scores a Vesta agent task prompt across **12 guardrail dimensions** on a **0–1
 | # | Dimension | What is evaluated |
 |---|-----------|-------------------|
 | R1 | Self-contained | No step assumes knowledge from a prior task — all needed data is looked up directly |
-| R2 | Explicit actions | Every step names the exact action, tool, field, or document — no implied actions |
+| R2 | Explicit actions | Every step names the action, field, or document clearly enough that it's unambiguous what is meant — uses natural language field references (e.g., "Closing Date", "Borrower's Monthly Income") that the Vesta agent's search function can resolve |
 | R3 | If/Then logic | Every conditional has specific criteria and a named outcome for each branch — no unhandled branches |
 | R4 | Explicit escalation | Every failure or gap case includes a trigger condition and a stated reason for escalation |
 | R5 | Data source specified | Loan data fields and uploaded documents are always distinguished — never conflated |

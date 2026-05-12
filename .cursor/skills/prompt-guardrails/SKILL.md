@@ -36,7 +36,7 @@ These 6 rules apply to every Vesta agent task prompt without exception.
 | # | Rule | Requirement |
 |---|------|-------------|
 | R1 | **Self-contained** | No step may reference what a previous task found or decided. If the agent needs information, it must look it up directly from loan data or documents. |
-| R2 | **Explicit actions** | Every step must name the exact action, tool, field, or document. No implied or ambiguous actions. Use the Action Vocabulary below. |
+| R2 | **Explicit actions** | Every step must name the action, field, or document clearly enough that it's unambiguous what is meant. Use natural language field references (e.g., "Closing Date", "Borrower's Monthly Income") — the Vesta agent's search function will resolve them. No implied or ambiguous actions. Use the Action Vocabulary below. |
 | R3 | **Clear If/Then logic** | Every conditional must define specific criteria and a named action for each branch. No open-ended instructions like "use your best judgment." |
 | R4 | **Explicit escalation** | Escalation does not happen automatically. Every failure, gap, or human-review case must include an explicit escalation instruction with the trigger condition and a stated reason. |
 | R5 | **Specify data source** | Distinguish loan data fields from uploaded documents. If the task involves a document, name it explicitly (e.g., "Review the credit report"). Never assume the agent will open a document when you only say "check credit." |
@@ -47,11 +47,11 @@ These 6 rules apply to every Vesta agent task prompt without exception.
 
 ## Action Vocabulary
 
-Use these exact phrasings. Non-canonical phrasings are a scoring defect.
+Use these exact phrasings. Non-canonical phrasings are a scoring defect. For field names, use clear natural language (e.g., "Closing Date", "Borrower's Monthly Income") — the Vesta agent's search function will resolve them to the correct technical field names.
 
 | Action | Canonical phrasing |
 |--------|--------------------|
-| Write a loan field | `Set [field] to [value]` |
+| Write a loan field | `Set [field] to [value]` — e.g., "Set Closing Date to [value]", "Set Borrower's Monthly Income to [value]" |
 | Leave a note | `Write a note stating [message]` |
 | Escalate | `Escalate the objective with the reason '[reason]'` |
 | Block | `Block the objective for [duration/condition]` |
@@ -59,7 +59,7 @@ Use these exact phrasings. Non-canonical phrasings are a scoring defect.
 | Run validations | `Run get_loan_validations and check for [specific validations]` |
 | Call an integration | `Order [service]` or `Run [integration name]` |
 | Make a UW decision | `Set loan decision to [decision]` |
-| Read loan data | `Use search_loan_data_model to get [field/entity]` |
+| Read loan data | `Use search_loan_data_model to get [field/entity]` — e.g., "Use search_loan_data_model to get Closing Date", "Use search_loan_data_model to get Borrower's Employment History" |
 | List objectives | `Use list_objectives to find [objective name]` |
 | Accept a document | `Mark the [document type] as Accepted` |
 | Complete the task | `finish with status=completed` |
@@ -103,7 +103,7 @@ Well-structured prompts break work into labeled steps. Each step must answer all
 
 ### M2 — Vague instruction
 - ❌ `"Make sure the borrower's income is right."`
-- ✅ `"Review the pay stubs and W-2s. Compare the borrower's monthly income on the documents to the income fields on the loan. If they don't match, set the monthly income field to the lesser of the two. Write a note summarizing what was changed and why."`
+- ✅ `"Review the pay stubs and W-2s. Compare the borrower's monthly income on the documents to the Monthly Income field on the loan. If they don't match, set Monthly Income to the lesser of the two. Write a note summarizing what was changed and why."`
 
 ### M3 — Missing escalation path
 - ❌ `"Verify employment history covers the last 2 years."`
@@ -115,11 +115,11 @@ Well-structured prompts break work into labeled steps. Each step must answer all
 
 ### M5 — Unspecified document
 - ❌ `"Check if the borrower's assets are sufficient for closing."`
-- ✅ `"Review the borrower's bank statements. Compare the account balances on the statements to the asset amounts on the loan. If any asset on the loan does not have a matching bank statement, write a note listing the unverified assets and escalate the objective."`
+- ✅ `"Review the borrower's bank statements. Compare the account balances on the statements to the Asset amounts on the loan. If any asset on the loan does not have a matching bank statement, write a note listing the unverified assets and escalate the objective."`
 
 ### R7 — UI reference
 - ❌ `"Select the loan purpose from the dropdown."` / `"Navigate to the income section and enter the value."` / `"Click Save on the screen."`
-- ✅ `"Use search_loan_data_model to get loan_purpose."` / `"Set monthly_income to [value]."`
+- ✅ `"Use search_loan_data_model to get Loan Purpose."` / `"Set Monthly Income to [value]."`
 
 ### Unhandled branch
 - ❌ `"If the loan amount exceeds the limit, escalate."` *(no else)*
