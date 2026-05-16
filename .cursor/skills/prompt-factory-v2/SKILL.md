@@ -80,7 +80,7 @@ Run `prompt-score` on the confirmed prompt. Render the full scorecard.
 
 Calculate: `average = total ÷ 12`
 
-- **If average > 9.0** → save to `../../output-prompts/{task-name}.md` and confirm the path to the user. Done.
+- **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
 - **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
 
 ---
@@ -128,7 +128,7 @@ Run `prompt-score` on the rewritten prompt. Render the full scorecard.
 
 Calculate: `average = total ÷ 12`
 
-- **If average > 9.0** → save to `../../output-prompts/{task-name}.md` and confirm the path to the user. Done.
+- **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
 - **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
 
 ---
@@ -149,7 +149,7 @@ Track the attempt count. Maximum **3 attempts total** (including the first score
    - UI references (R7) — rewrite as `Use search_loan_data_model to get [field]`
 3. Re-run `prompt-score` on the revised prompt. Render the updated scorecard.
 4. Calculate `average = total ÷ 12`.
-5. **If average > 9.0** → save to `../../output-prompts/{task-name}.md`. Done.
+5. **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
 6. **If average ≤ 9.0 and attempts < 3** → increment attempt count and repeat from step 1.
 7. **If average ≤ 9.0 and attempts = 3** → stop. Report:
 
@@ -160,13 +160,21 @@ Do NOT save automatically — wait for the user's explicit decision.
 
 ---
 
-## Output Rules
+## Save Path Rules
 
-| Property      | Value                                                                     |
-| ------------- | ------------------------------------------------------------------------- |
-| Save location | `../../output-prompts/` (relative to skill folder)                        |
-| File name     | Task name slug from the prompt title (e.g., `closing-date-adjustment.md`) |
-| File contents | Final rewritten prompt only — no scorecard, no audit report               |
+Determine the output path before writing the file:
+
+1. **File path was provided** → overwrite that exact file in place. Do not change the file name or location.
+2. **Prompt was pasted inline (no file path)** → save to `{parent-directory-of-this-skill}/output-prompts/{task-name}.md`, where the parent directory is the directory that contains the `.cursor/skills/` folder (i.e., never save inside `.cursor/`).
+
+> **Never write any file inside a `.cursor/` directory.**
+
+| Property      | Value                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| File path provided | Overwrite the original file at its existing path                                                                   |
+| No file path  | Save to `output-prompts/{task-name}.md` in the workspace root (parent of `.cursor/`)                                       |
+| File name     | Task name slug from the prompt title (e.g., `closing-date-adjustment.md`) — only applies when no file path was provided    |
+| File contents | Final rewritten prompt only — no scorecard, no audit report                                                                 |
 
 ---
 

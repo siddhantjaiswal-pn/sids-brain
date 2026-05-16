@@ -171,34 +171,17 @@ def _task_header(task: dict, extra_lines: list[str]) -> list[str]:
 
 
 def write_instructions_task(task: dict, path: Path) -> None:
-    trigger = task.get("triggerMethod", "—")
-    ai = "enabled" if task.get("aiAgentEnabled") else "disabled"
-    disable_manual = "yes" if task.get("disableManualSubmission") else "no"
-    auto_reopen = "yes" if task.get("automaticallyReopensUponObjectiveScenarioChangeReopen") else "no"
-    entity = task.get("entityType", "")
-
-    header_lines = [
-        f"**Type**: Instructions | **Entity**: {entity} | **Trigger**: {trigger} | **AI Agent**: {ai}  ",
-        f"**Disable Manual Submission**: {disable_manual} | **Auto-Reopens on Scenario Change**: {auto_reopen}",
-    ]
-    lines = _task_header(task, header_lines)
+    lines = [f"# {task['name']}", ""]
 
     entries = task.get("templateChecklistEntries", [])
-    lines += ["## Checklist Steps", ""]
     if entries:
         for i, entry in enumerate(entries, 1):
             step_text = entry.get("name", "").strip().replace("\n", "  \n   ")
             lines.append(f"**{i}.** {step_text}")
-            step_rel = entry.get("relevanceConditionGroups", [])
-            if step_rel:
-                lines.append(f"   > _Step shown when:_ {render_condition_groups(step_rel)}")
             lines.append("")
     else:
         lines.append("_No checklist steps configured_")
         lines.append("")
-
-    comp_groups = task.get("completionConditionGroups", [])
-    lines += ["## Completion Conditions", "", render_condition_groups(comp_groups), ""]
 
     path.write_text("\n".join(lines), encoding="utf-8")
 
