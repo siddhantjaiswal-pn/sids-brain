@@ -28,14 +28,12 @@ Show a preview and wait for explicit confirmation:
 
 ```
 Ticket to create:
-  Project:      HIS (Horizon Internal Services)
+  Project:      [HIS / BTX / …]
   Type:         Story
   Parent Epic:  [Epic title]
   Summary:      [polished summary]
   Description:  [first 200 chars of polished description…]
-  Channel:      CDL
-  Work-Stream:  Horizon Internal Services
-  Teams:        Eligibles
+  [Project-specific required fields at their defaults]
   Assignee:     Siddhant Jaiswal
   Sprint:       Not set
   Story Points: Not set
@@ -44,6 +42,12 @@ Ticket to create:
 If user wants changes, update and re-confirm before proceeding.
 
 ## Step 3: Create the Ticket
+
+### Project-specific required fields
+
+Each project has different required `additional_fields`. Use the correct defaults based on the parent Epic's project key.
+
+#### HIS (Horizon Internal Services)
 
 ```
 createJiraIssue(
@@ -62,6 +66,34 @@ createJiraIssue(
   contentFormat = "markdown"
 )
 ```
+
+#### BTX (Business Transformation Execution)
+
+```
+createJiraIssue(
+  cloudId            = "horizonpennymac.atlassian.net",
+  projectKey         = "BTX",
+  issueTypeName      = "Story",          // or "Bug"
+  summary            = "<polished>",
+  description        = "<polished>",
+  parent             = "BTX-1",
+  assignee_account_id = "712020:4ddaaf98-60fb-4b88-8366-1ccb9c511a27",
+  additional_fields  = {
+    "customfield_10104": [{"value": "Pennymac", "id": "10132"}],
+    "customfield_10036": {"value": "AI: Agent Implementation", "id": "10770"},
+    "customfield_10037": [{"value": "BT Core", "id": "10803"}]
+  },
+  contentFormat = "markdown"
+)
+```
+
+BTX required fields reference:
+
+| Field | Field ID | Default Value | Default ID |
+|-------|----------|---------------|------------|
+| Responsible Party | `customfield_10104` | `Pennymac` | `10132` |
+| Work-Stream | `customfield_10036` | `AI: Agent Implementation` | `10770` |
+| Teams | `customfield_10037` | `BT Core` | `10803` |
 
 Add to `additional_fields` only when user specified:
 
@@ -150,4 +182,5 @@ editJiraIssue(
 - **Never make any updates** to parent tickets or Epics — they are strictly read-only
 - **Never fetch any other tickets from an Epic** — only fetch the single ticket ID explicitly provided by the user; do not retrieve siblings, children, or any other linked issues
 - **ADF only** for description updates — never wiki markup or markdown
-- Defaults (Channel, Work-Stream, Teams, Assignee) apply unless user explicitly overrides
+- Defaults (Channel, Work-Stream, Teams, Responsible Party, Assignee) apply per project unless user explicitly overrides
+- Determine the project key from the parent Epic's key prefix (e.g. `BTX-1` → BTX, `HIS-498` → HIS) and apply that project's required fields
