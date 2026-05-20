@@ -104,9 +104,21 @@ Run the full guardrail audit on the prompt. Render the complete audit report.
 
 **Document name validation:** If any document is referenced in the prompt, read `../prompt-guardrails/vesta-doc-types.md` and verify that all document names match the exact names from the canonical list. Flag any mismatches in the audit report.
 
-### Step 3 — Rewrite based on findings
+### Step 3 — Ask clarifying questions
 
-Apply fixes for all FAIL and WARN items from the audit:
+Based on every FAIL and WARN in the audit report, ask the user targeted clarifying questions before rewriting. Combine all questions into one message. Examples:
+
+- "Step 3 has an unhandled branch — what should the agent do if [condition] is not met?"
+- "Step 5 references a document but doesn't name it — which document should the agent review here?"
+- "The escalation is missing a reason — what reason should the agent state when escalating?"
+- "This step implies the agent will know what a prior task found — where should it look up this data directly?"
+- "You mentioned 'W-2' but the exact Vesta document name is '2024 W-2' — should I use the year-specific name or a generic reference?"
+
+Wait for the user's full response before proceeding.
+
+### Step 4 — Rewrite based on findings and answers
+
+Using the original prompt, the guardrail findings, and all clarifying answers from Step 3, apply fixes for all FAIL and WARN items:
 
 - Add missing escalation paths with explicit trigger conditions and reasons
 - Replace vague instructions with specific actions, fields, or documents
@@ -119,9 +131,13 @@ Apply fixes for all FAIL and WARN items from the audit:
 - Add a dedicated notes step immediately before every terminal
 - Use canonical action vocabulary throughout
 
-Present the rewritten prompt to the user.
+Present the rewritten prompt to the user, then ask:
 
-### Step 4 — Score and save
+> Does this look correct? Reply **"confirm"** to proceed to scoring, or tell me what to change.
+
+Apply any requested changes, then wait for confirmation before scoring.
+
+### Step 5 — Score and save
 
 Read and follow:
 `../prompt-score/SKILL.md`
