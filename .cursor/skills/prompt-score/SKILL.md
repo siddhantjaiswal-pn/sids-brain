@@ -1,8 +1,8 @@
 ---
 name: prompt-score
 description: >-
-  Scores a Vesta agent task prompt (.md file) across 12 dimensions derived from
-  the Vesta Agent Task Instruction Writing Guide guardrails (R1–R7, M1–M5).
+  Scores a Vesta agent task prompt (.md file) across 13 dimensions derived from
+  the Vesta Agent Task Instruction Writing Guide guardrails (R1–R7, M1–M6).
   Produces a scorecard table with per-dimension rationale and a flagged issues
   list. Use when the user says "prompt-score", "score this prompt", "grade this
   task", "rate my prompt", or provides a .md path and asks for a quality score.
@@ -10,7 +10,7 @@ description: >-
 
 # Prompt Score
 
-Scores a Vesta agent task prompt across **12 guardrail dimensions** on a **0–10 scale**.
+Scores a Vesta agent task prompt across **13 guardrail dimensions** on a **0–10 scale**.
 
 ---
 
@@ -30,6 +30,7 @@ Scores a Vesta agent task prompt across **12 guardrail dimensions** on a **0–1
 | M3 | Escalation path exists | All situations the agent cannot resolve have an explicit escalation — not left to "unable to complete" |
 | M4 | No human communication | No instruction to email, call, notify, or contact any person |
 | M5 | Documents named explicitly | All document references use the full type name with "document" suffix (e.g., "Credit Report document", "Bank Statement document", "W-2 document") |
+| M6 | Notes step present | A dedicated notes step appears immediately before every terminal, instructing the agent to write all findings, values, decisions, and reasons from the preceding steps |
 
 ---
 
@@ -83,8 +84,9 @@ File: {relative path}
 | M3  Escalation path        |  /10  |                                                |
 | M4  No human comms         |  /10  |                                                |
 | M5  Documents named        |  /10  |                                                |
+| M6  Notes step present     |  /10  |                                                |
 
-Overall: XX / 120
+Overall: XX / 130
 
 --- Flagged Issues ---
 [R3] Step N — "{quoted text}" — unhandled branch, no negative case defined.

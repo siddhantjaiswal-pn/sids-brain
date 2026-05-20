@@ -24,7 +24,7 @@ These facts underpin every rule below. Keep them in mind when auditing any promp
 
 1. **One task at a time.** The agent has no memory of previous tasks and cannot see future ones. Every task must be fully self-contained.
 2. **Tools, not judgment.** The agent only does what is explicitly written. It will not infer steps that are missing.
-3. **Finishes with a status.** The agent reports one of: `completed`, `unable to complete`, `blocked`, or `escalated`. If you want a specific status, you must say so. A step may also explicitly instruct the agent to **not complete the task** — this is a valid terminal state when the prompt intentionally leaves the task open (e.g., a prerequisite data condition was not met). The instruction must be explicit: `Do not complete the task.`
+3. **Finishes with a status.** The agent reports one of: `completed`, `unable to complete`, `blocked`, or `escalated`. **Default convention:** the happy path always ends with `finish with status=completed`; the unhappy path always ends with `Do not complete the task.` — unless the prompt explicitly specifies an escalation or other terminal. Never leave a path without an explicit terminal instruction.
 4. **Two distinct data sources.** Structured loan data (borrower info, liabilities, assets, etc.) and uploaded documents (credit reports, pay stubs, bank statements, etc.) are different. The agent will not cross between them unless told to.
 
 ---
@@ -38,9 +38,9 @@ These 6 rules apply to every Vesta agent task prompt without exception.
 | R1 | **Self-contained** | No step may reference what a previous task found or decided. If the agent needs information, it must look it up directly from loan data or documents. |
 | R2 | **Explicit actions** | Every step must name the action, field, or document clearly enough that it's unambiguous what is meant. Use natural language field references (e.g., "Closing Date", "Borrower's Monthly Income") — the Vesta agent's search function will resolve them. No implied or ambiguous actions. Use the Action Vocabulary below. |
 | R3 | **Clear If/Then logic** | Every conditional must define specific criteria and a named action for each branch. No open-ended instructions like "use your best judgment." |
-| R4 | **Explicit escalation** | Escalation does not happen automatically. Every failure, gap, or human-review case must include an explicit escalation instruction with the trigger condition and a stated reason. |
+| R4 | **Explicit escalation** | Escalation does not happen automatically. When escalation is the intended outcome for a failure or human-review case, the instruction must include the trigger condition and a stated reason. If escalation is not specified, the unhappy path must terminate with `Do not complete the task.` — never leave an unhappy path without a terminal. |
 | R5 | **Specify data source** | Distinguish loan data fields from uploaded documents. Document references must be prefixed with "document" (e.g., "Review the Credit Report document", "Check if W-2 document is uploaded"). Never assume the agent will open a document when you only reference loan data. |
-| R6 | **Define done** | Every path must end with a clear completion status, an escalation, or an explicit `Do not complete the task.` instruction. The agent must know what "done" looks like for every possible outcome. |
+| R6 | **Define done** | Every path must end with an explicit terminal. **Happy path default:** `finish with status=completed`. **Unhappy path default:** `Do not complete the task.` (preceded by a note). Escalation is valid only when the prompt explicitly calls for it. |
 | R7 | **No UI references** | The agent has no access to the Vesta UI. No step may reference navigating a screen, clicking a button, selecting from a dropdown, or interacting with any interface element. Rewrite as an explicit data lookup or document review. |
 
 ---
@@ -79,7 +79,8 @@ Well-structured prompts break work into labeled steps. Each step must answer all
 - Use uppercase labels for step names (e.g., `STEP 1: GATHER KEY DATA`, `STEP 2: CHECK TITLE STATUS`)
 - Write conditional logic as: `IF [condition]: [action]. IF NOT [condition]: [action].`
 - Every `IF` must have a corresponding outcome for the negative case — no unhandled branches
-- Every path must terminate in a completion status, an escalation, or an explicit `Do not complete the task.` instruction (always preceded by a `Write a note stating [reason]`)
+- Every path must terminate with an explicit terminal. **Happy path:** `finish with status=completed`. **Unhappy path:** `Do not complete the task.` (always preceded by a `Write a note stating [reason]`). Escalation is only used when the prompt explicitly calls for it.
+- The **second-to-last step** of every prompt must be a dedicated notes step: `Write a note stating all findings, values checked, decisions made, and reasons for any actions taken in the preceding steps.` This step must appear before any terminal (completion, escalation, or do-not-complete).
 
 ---
 
@@ -89,9 +90,10 @@ Well-structured prompts break work into labeled steps. Each step must answer all
 |---|---------|-------------|
 | M1 | **Cross-task reference** | Writing instructions that reference what a prior task found or decided. The agent starts fresh on every task. |
 | M2 | **Vague instructions** | Using instructions like "review the loan" or "make sure everything looks right." The agent needs specific fields, documents, and criteria. |
-| M3 | **Missing escalation path** | If a task can encounter a situation the agent can't resolve, it needs an explicit escalation. Without it the agent may report "unable to complete" with no routing. |
+| M3 | **Missing escalation path** | If the prompt intends escalation for a failure or gap case but omits the escalation instruction, that is a defect. However, not every unhappy path requires escalation — if escalation is not specified, `Do not complete the task.` is the correct default terminal. |
 | M4 | **Human communication** | Asking the agent to send emails, make calls, or contact borrowers/realtors. The agent cannot communicate with people. Rewrite as: gather the data → escalate to a human. |
 | M5 | **Unspecified document** | Saying "check credit" when you mean "review the credit report." Loan data fields and uploaded documents are different — name the document explicitly. |
+| M6 | **Missing notes step** | Ending the task without a dedicated notes step before the terminal. Every prompt must include an explicit step to write detailed notes covering all findings, values, decisions, and reasons from the preceding steps. |
 
 ---
 
@@ -125,18 +127,23 @@ Well-structured prompts break work into labeled steps. Each step must answer all
 - ❌ `"If the loan amount exceeds the limit, escalate."` *(no else)*
 - ✅ `"If the loan amount exceeds the limit => Escalate the objective with the reason '[reason]'. If within the limit => proceed to the next step."`
 
+### M6 — Missing notes step
+- ❌ A prompt whose final step is `finish with status=completed` with no notes step before it.
+- ✅ `"STEP N: NOTES — Write a note stating all findings, values reviewed, decisions made, and reasons for any actions taken in the preceding steps."`
+
 ---
 
 ## Pre-Save Checklist
 
-When validating a prompt, confirm all 8 items pass:
+When validating a prompt, confirm all 9 items pass:
 
 - [ ] **Self-contained?** Could the agent complete this task without knowing what any other task did?
 - [ ] **Actions explicit?** Are specific tools or actions named (e.g., `write_loan`, `escalate`, `review the credit report`)?
 - [ ] **Conditions clear?** Is every IF/THEN decision written with specific criteria and a named action for each branch?
 - [ ] **Escalation path exists?** If something unexpected happens, does the agent know when and how to escalate?
 - [ ] **Documents named?** If the task involves document verification, are the document types explicitly named?
-- [ ] **Completion defined?** Does the agent know what "done" looks like for every possible outcome? (Acceptable terminals: `finish with status=completed`, an escalation, or `Do not complete the task.` preceded by a note.)
+- [ ] **Completion defined?** Does every path end with an explicit terminal? Happy path = `finish with status=completed`. Unhappy path = `Do not complete the task.` preceded by a note. Escalation only when explicitly called for.
+- [ ] **Notes step present?** Is there a dedicated step immediately before each terminal that instructs the agent to write detailed notes covering all findings, values, decisions, and reasons from the preceding steps?
 - [ ] **No human communication?** The agent cannot send emails, make calls, or contact any party.
 - [ ] **No cross-task references?** No step references another task's results — if data is needed, the agent must look it up itself.
 
@@ -163,7 +170,7 @@ Do not proceed to Step 3 until all document type names are confirmed.
 
 ### Step 3 — Check every rule and mistake
 
-For each Core Rule (R1–R6) and Common Mistake (M1–M5), scan every step and mark **PASS**, **WARN**, or **FAIL**.
+For each Core Rule (R1–R7) and Common Mistake (M1–M6), scan every step and mark **PASS**, **WARN**, or **FAIL**.
 
 | Status | Meaning |
 |--------|---------|
@@ -193,6 +200,7 @@ File: {relative path}
 | M3  Escalation path       | PASS/WARN/FAIL | {one-line finding or "OK"} |
 | M4  No human comms        | PASS/WARN/FAIL | {one-line finding or "OK"} |
 | M5  Documents named       | PASS/WARN/FAIL | {one-line finding or "OK"} |
+| M6  Notes step present    | PASS/WARN/FAIL | {one-line finding or "OK"} |
 | R7  No UI references      | PASS/WARN/FAIL | {one-line finding or "OK"} |
 
 Failures: N  |  Warnings: N  |  Passes: N
@@ -210,7 +218,7 @@ If there are no violations, replace the Violations section with: `No violations 
 After the report, always offer:
 
 > - Say **"fix"** to apply corrections to all violations.
-> - Say **"checklist"** to walk through the 8-item pre-save checklist interactively.
+> - Say **"checklist"** to walk through the 9-item pre-save checklist interactively.
 > - Or tell me which specific steps to update.
 
 Do NOT apply any fixes here — this skill is audit-only unless the user says "fix."
