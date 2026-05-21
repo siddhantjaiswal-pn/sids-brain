@@ -21,13 +21,13 @@ Scores a Vesta agent task prompt across **13 guardrail dimensions** on a **0–1
 | R1 | Self-contained | No step assumes knowledge from a prior task — all needed data is looked up directly |
 | R2 | Explicit actions | Every step names the action, field, or document clearly enough that it's unambiguous what is meant — uses natural language field references (e.g., "Closing Date", "Borrower's Monthly Income") that the Vesta agent's search function can resolve |
 | R3 | If/Then logic | Every conditional has specific criteria and a named outcome for each branch — no unhandled branches |
-| R4 | Explicit escalation | Every failure or gap case includes a trigger condition and a stated reason for escalation |
+| R4 | Explicit escalation | Every failure or gap case includes either: (a) a trigger condition and stated reason for escalation, OR (b) an explicit `Do not complete the task.` instruction preceded by a note — never an implicit or absent terminal |
 | R5 | Data source specified | Loan data fields and uploaded documents are always distinguished — never conflated. Document references must be prefixed with "document" (e.g., "Credit Report document", "W-2 document") |
 | R6 | Completion defined | Every path ends with a clear `status=completed`, an escalation, or an explicit `Do not complete the task.` instruction (always preceded by a `Write a note stating [reason]`) — no dangling paths |
 | R7 | No UI references | No step references screens, buttons, dropdowns, or navigation — rewritten as data lookups |
 | M1 | No cross-task references | No step references what another task found or decided |
 | M2 | No vague instructions | No open-ended language like "make sure", "review the loan", or "ensure it's correct" |
-| M3 | Escalation path exists | All situations the agent cannot resolve have an explicit escalation — not left to "unable to complete" |
+| M3 | Escalation path exists | All situations the agent cannot resolve have an explicit resolution — either an escalation with trigger and reason, OR an explicit `Do not complete the task.` preceded by a note. Never left open or ambiguous. |
 | M4 | No human communication | No instruction to email, call, notify, or contact any person |
 | M5 | Documents named explicitly | All document references use the full type name with "document" suffix (e.g., "Credit Report document", "Bank Statement document", "W-2 document") |
 | M6 | Notes step present | A dedicated notes step appears immediately before every terminal, instructing the agent to write all findings, values, decisions, and reasons from the preceding steps |
