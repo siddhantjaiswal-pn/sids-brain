@@ -1,4 +1,6 @@
-# My Team
+# My Team — BT-Core
+
+**Workstream:** AI: Agent Implementation
 
 This file contains details of all team members including their Atlassian JIRA Account IDs and Slack User IDs for quick reference.
 
@@ -9,7 +11,25 @@ This file contains details of all team members including their Atlassian JIRA Ac
 
 ## Team Members
 
-### 1. Sumanth Venkatesha
+### 1. Sheetal Singh
+- **Role:** EVP, Product Management
+- **Email:** sheetal.singh@pnmac.com
+- **Jira Display Name:** Sheetal Singh
+- **Jira Account ID:** `70121:bb12c9aa-eb7a-4e45-af0a-4a7604063720`
+- **Slack User ID:** `U01B5HRSQTX`
+- **Slack Title:** EVP, Product Management
+- **Timezone:** America/Chicago
+
+### 2. Rahul Pantvaidya
+- **Role:** Analyst
+- **Email:** rahul.pantvaidya@pnmac.com
+- **Jira Display Name:** Rahul Pantvaidya
+- **Jira Account ID:** `712020:803ca2e3-eaa5-4bb3-b2a7-b286dd6ab366`
+- **Slack User ID:** `U07AL4XAX6E`
+- **Slack Title:** Analyst I, Product
+- **Timezone:** America/Chicago
+
+### 3. Sumanth Venkatesha
 - **Role:** Product Owner
 - **Email:** sumanth.mysorevenkatesha@pnmac.com
 - **Jira Display Name:** Sumanth Mysore venkatesha
@@ -18,61 +38,14 @@ This file contains details of all team members including their Atlassian JIRA Ac
 - **Slack Title:** Product Owner
 - **Timezone:** America/New_York
 
-### 2. Shilpashree Manjunath (Shilpa)
+### 4. Sai Sravanthi Varanasi
 - **Role:** Analyst
-- **Email:** shilpashree.manjunath@pnmac.com
-- **Jira Display Name:** Shilpashree Manjunath
-- **Jira Account ID:** `712020:e0e65efd-64cf-4093-9b67-a8f5a6823c35`
-- **Slack User ID:** `U07PBR16DFE`
-- **Slack Title:** Analyst III, Product
-- **Timezone:** America/New_York
-
-### 3. Ziyun Huang (Erin)
-- **Role:** Analyst
-- **Email:** ziyun.huang@pnmac.com
-- **Jira Display Name:** Ziyun Huang
-- **Jira Account ID:** `6243071e247a4b00691bd60f`
-- **Slack User ID:** `U038V1726SG`
-- **Slack Title:** Analyst III, Product
+- **Email:** saisravanthi.varanasi@pnmac.com
+- **Jira Display Name:** Sai sravanthi Varanasi
+- **Jira Account ID:** `712020:de20d4aa-ed52-465a-a0be-cd3d53359a42`
+- **Slack User ID:** `U07VBQS2WTB`
+- **Slack Title:** Analyst II, Product
 - **Timezone:** America/Chicago
-- **Note:** Email in Jira/Slack is ziyun.huang@pnmac.com (different from provided 2.zhuang@pnmac.com)
-
-### 4. Chirag Bhardwaj
-- **Role:** Offshore UAT
-- **Email:** chirag.bhardwaj@pnmac.com
-- **Jira Display Name:** Chirag Bhardwaj
-- **Jira Account ID:** `5dc0785428be230df580d92d`
-- **Slack User ID:** `U02326LFJPL`
-- **Slack Title:** Vendor Bench
-- **Timezone:** Asia/Kolkata
-- **Note:** Email in Jira/Slack is chirag.bhardwaj@pnmac.com (different from provided 2.cbhardwaj@pnmac.com)
-
-### 5. Sonic Mamidala
-- **Role:** Offshore UAT
-- **Email:** v-sonic.mamidala@pnmac.com
-- **Jira Display Name:** Sonic Mamidala
-- **Jira Account ID:** `712020:4b552ee0-927a-4672-9d8f-8fe350cee79e`
-- **Slack User ID:** `U08L7LBM1EH`
-- **Slack Title:** Offshore UAT Resource
-- **Timezone:** Asia/Kolkata
-
-### 6. Vibha Katre
-- **Role:** Offshore UAT
-- **Email:** v-vibha.katre@pnmac.com
-- **Jira Display Name:** Vibha Katre
-- **Jira Account ID:** `712020:8262975e-2f05-42f5-aaed-a514958f9697`
-- **Slack User ID:** `U09JYKK5H71`
-- **Slack Title:** Offshore UAT Resource
-- **Timezone:** Asia/Kolkata
-
-### 7. Ravi Goyal
-- **Role:** Offshore UAT
-- **Email:** v-ravi.goyal@pnmac.com
-- **Jira Display Name:** Ravi Goyal
-- **Jira Account ID:** `712020:4dbdf4aa-f34b-4c69-8ad8-fcd50e48e6ee`
-- **Slack User ID:** `U09H6Q67QSW`
-- **Slack Title:** Offshore UAT Resource
-- **Timezone:** Asia/Kolkata
 
 ---
 
@@ -81,33 +54,25 @@ This file contains details of all team members including their Atlassian JIRA Ac
 ### Jira Account IDs
 | Name | Email | Jira Account ID |
 |------|-------|-----------------|
+| Sheetal Singh | sheetal.singh@pnmac.com | 70121:bb12c9aa-eb7a-4e45-af0a-4a7604063720 |
+| Rahul Pantvaidya | rahul.pantvaidya@pnmac.com | 712020:803ca2e3-eaa5-4bb3-b2a7-b286dd6ab366 |
 | Sumanth Mysore venkatesha | sumanth.mysorevenkatesha@pnmac.com | 712020:501e20dd-f1d3-4f6a-9ac9-dd85e55e5c47 |
-| Shilpashree Manjunath | shilpashree.manjunath@pnmac.com | 712020:e0e65efd-64cf-4093-9b67-a8f5a6823c35 |
-| Ziyun Huang | ziyun.huang@pnmac.com | 6243071e247a4b00691bd60f |
-| Chirag Bhardwaj | chirag.bhardwaj@pnmac.com | 5dc0785428be230df580d92d |
-| Sonic Mamidala | v-sonic.mamidala@pnmac.com | 712020:4b552ee0-927a-4672-9d8f-8fe350cee79e |
-| Vibha Katre | v-vibha.katre@pnmac.com | 712020:8262975e-2f05-42f5-aaed-a514958f9697 |
-| Ravi Goyal | v-ravi.goyal@pnmac.com | 712020:4dbdf4aa-f34b-4c69-8ad8-fcd50e48e6ee |
+| Sai sravanthi Varanasi | saisravanthi.varanasi@pnmac.com | 712020:de20d4aa-ed52-465a-a0be-cd3d53359a42 |
 
 ### Slack User IDs
 | Name | Email | Slack User ID |
 |------|-------|---------------|
+| Sheetal Singh | sheetal.singh@pnmac.com | U01B5HRSQTX |
+| Rahul Pantvaidya | rahul.pantvaidya@pnmac.com | U07AL4XAX6E |
 | Sumanth Mysore venkatesha | sumanth.mysorevenkatesha@pnmac.com | U07R3TNT66L |
-| Shilpashree Manjunath | shilpashree.manjunath@pnmac.com | U07PBR16DFE |
-| Ziyun Huang | ziyun.huang@pnmac.com | U038V1726SG |
-| Chirag Bhardwaj | chirag.bhardwaj@pnmac.com | U02326LFJPL |
-| Sonic Mamidala | v-sonic.mamidala@pnmac.com | U08L7LBM1EH |
-| Vibha Katre | v-vibha.katre@pnmac.com | U09JYKK5H71 |
-| Ravi Goyal | v-ravi.goyal@pnmac.com | U09H6Q67QSW |
+| Sai sravanthi Varanasi | saisravanthi.varanasi@pnmac.com | U07VBQS2WTB |
 
 ---
 
 ## Notes
 - All team members have been verified in both Atlassian JIRA and Slack systems
-- Ziyun (Erin) and Chirag have different email addresses in the systems than initially provided
 - The Atlassian Cloud ID is constant and should be used for all JIRA API calls
-- Offshore UAT team members are in Asia/Kolkata timezone
-- US-based team members are in America/New_York or America/Chicago timezones
+- Team members are in America/New_York or America/Chicago timezones
 
 ---
 
@@ -115,21 +80,16 @@ This file contains details of all team members including their Atlassian JIRA Ac
 
 The following Vesta configuration objectives are managed by this team:
 
-1. **Additional Final Eligibility Review** (`additionalFinalEligibilityReview`)
-2. **Additional Initial Eligibility Review** (`additionalInitialEligibilityReview`)
-3. **Additional Low Doc Review** (`additionalLowDocReview`)
-4. **Agent Low Doc Review** (`agentLowDocReview`)
-5. **Asset Review** (`assetReview`)
-6. **Final Eligibility Review** (`finalEligibilityReview`)
-7. **Generate Underwriting Package** (`generateUnderwritingPackage`)
-8. **Guideline Review** (`guidelineReview`)
-9. **Income Review** (`incomeReview`)
-10. **Initial Eligibility Review** (`initialEligibilityReview`)
-11. **Loan Restructure** (`loanRestructure`)
-12. **Low Doc Review** (`lowDocReview`)
+1. **Agent Low Doc Review** (`agentLowDocReview`)
+2. **Agent Additional Low Doc Review** (`agentAdditionalLowDocReview`)
+3. **Agent Initial Eligibility CES Review** (`agentInitialEligibilityCesReview`)
+4. **Agent Final Eligibility CES Review** (`agentFinalEligibilityCesReview`)
+5. **Agent Loan Set Up** (`agentLoanSetUp`)
+6. **Agent Funding Review** (`agentFundingReview`)
+7. **Agent Send Closing Disclosure** (`agentSendClosingDisclosure`)
 
 _For detailed configuration of each objective, see: `Vesta/config/objectives/`_
 
 ---
 
-**Last Updated:** April 14, 2026
+**Last Updated:** May 23, 2026
