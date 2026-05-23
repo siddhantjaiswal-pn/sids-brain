@@ -171,13 +171,13 @@ def _task_header(task: dict, extra_lines: list[str]) -> list[str]:
 
 
 def write_instructions_task(task: dict, path: Path) -> None:
-    lines = [f"# {task['name']}", ""]
+    lines = []
 
     entries = task.get("templateChecklistEntries", [])
     if entries:
-        for i, entry in enumerate(entries, 1):
+        for entry in entries:
             step_text = entry.get("name", "").strip().replace("\n", "  \n   ")
-            lines.append(f"**{i}.** {step_text}")
+            lines.append(step_text)
             lines.append("")
     else:
         lines.append("_No checklist steps configured_")

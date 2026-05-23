@@ -2,8 +2,8 @@
 name: sync-vesta-config
 description: >
   Syncs a Vesta objective into the knowledge base from a config.json file the user has already
-  placed in the objective's folder. Never makes API calls — reads config.json directly from
-  Vesta/config/objectives/{objective-slug}/config.json and writes all task .md files.
+  placed in Vesta/config/objectives/. Never makes API calls — reads config.json, derives the
+  objective folder name from the config, and writes all task .md files.
   Use when the user says "sync Vesta config", "sync objective", "process this objective",
   "process the config", "create the files", or names an objective folder.
 ---
@@ -18,21 +18,20 @@ Writes objective task files from a `config.json` the user has already placed in 
 
 ## Workflow
 
-### Step 1: Identify the objective folder
+### Step 1: Confirm the config file is in place
 
-The user will have already created a folder at:
+The user will have already dropped `config.json` directly into:
 
 ```
-Vesta/config/objectives/{objective-slug}/config.json
+Vesta/config/objectives/config.json
 ```
 
-If the user hasn't told you the folder name, ask:
-
-> "What is the objective folder name?"
+The script reads the objective name from inside the config and creates (or updates) the correct
+subfolder automatically — no need to ask the user for a folder name.
 
 ### Step 2: Process the config and write task files
 
-Replace `{objective-slug}` with the actual folder name, then run:
+Run:
 
 ```bash
 cd "/Users/sijaiswal/Sids Brain" && python3 -c "
@@ -43,7 +42,7 @@ spec = importlib.util.spec_from_file_location('sync_vesta_config', '.cursor/skil
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
-config_path = mod.OBJECTIVES_DIR / '{objective-slug}' / 'config.json'
+config_path = mod.OBJECTIVES_DIR / 'config.json'
 with open(config_path, 'r') as f:
     obj = json.load(f)
 
@@ -95,8 +94,8 @@ After the script completes, tell the user:
 
 ```
 Vesta/config/objectives/
+  config.json                 ← user drops this file here before running the skill
   {objective-slug}/
-    config.json               ← user places this file before running the skill
     README.md                 ← written by this skill
     tasks/
       {task-slug}.md          ← written by this skill
@@ -106,6 +105,7 @@ Vesta/config/objectives/
 ## Notes
 
 - The `config.json` file is **never modified** — it is read-only input.
-- Existing `README.md` and task files in the objective directory are overwritten.
-- Slugs are derived from `externalIdentifier` (camelCase → kebab-case), which is stable.
+- The objective subfolder name is derived automatically from `externalIdentifier` in the config (camelCase → kebab-case).
+- Existing `README.md` and task files in the objective directory are overwritten on re-sync.
+- Instructions task files contain only the raw checklist step text — no heading or numbered prefix.
 - If the script fails to load, verify `.cursor/skills/sync-vesta-config/sync-vesta-config.py` exists.
