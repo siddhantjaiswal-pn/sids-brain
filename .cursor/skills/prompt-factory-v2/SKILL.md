@@ -1,20 +1,70 @@
 ---
 name: prompt-factory-v2
-description: Orchestrates the full Vesta prompt lifecycle for creating or improving agent task prompts. Branch A (new prompt): collects a raw prompt, runs prompt-guardrails audit, asks clarifying questions based on findings, builds detailed instructions, scores with prompt-score, and saves when average score > 9.0 — iterates up to 3 times. Branch B (modify existing): runs prompt-guardrails on a provided prompt or .md file, rewrites to fix all violations, scores with prompt-score, saves when average > 9.0 — iterates up to 3 times. After 3 failed attempts, stops and lets the user decide. Use when the user says "prompt factory v2", "run prompt-factory-v2", "create a new vesta prompt", "improve this prompt", "modify this agent prompt", or "score and fix my prompt".
+description: Manager agent for the Vesta prompt lifecycle. Coordinates three sub-agents — Prompt Template Generator, Prompt Score (the canonical ruleset + evaluator), and Objective Score — across three assembly lines. Line A (Build): optional template scaffold → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line B (Fix): existing prompt → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line C (Audit): scores all tasks in a Vesta objective folder and writes an executive health report — read-only. Use when the user says "prompt factory", "prompt factory v2", "run prompt-factory-v2", "create a vesta prompt", "generate a prompt template", "improve this prompt", "fix this prompt", "score and fix my prompt", or "score this objective".
 disable-model-invocation: false
 ---
 
 # Prompt Factory v2
 
-Orchestrator for creating and improving Vesta agent task prompts to production quality (average score > 9.0 / 10).
+Manager agent for the Vesta prompt lifecycle. Coordinates three specialist sub-agents and routes work through the correct assembly line based on what the user needs.
+
+**Design principles (read first):**
+1. **Evaluate once per version.** Use the unified `prompt-score` table (Status + Score) as the single evaluation. `prompt-score` is both the canonical ruleset and the evaluator — there is no separate guardrails skill.
+2. **Loop silently.** The rewrite-and-improve loop runs internally. Show the user only the final scorecard plus a bulleted "what changed" summary — never intermediate scorecards.
+3. **One gate.** Build and Fix end at a single confirm-before-save gate. Ask clarifying questions only when something is genuinely ambiguous or blocking, batched into one message.
+4. **Never invent logic — the user decides outcomes.** You may never decide what happens on a branch. Any unhandled `IF` (the positive case, the negative case, or both), any escalation trigger or reason, and any choice of terminal (`status=completed` vs escalate vs `Do not complete the task.`) is a business decision that **must** be asked of the user. Only purely structural fixes may be applied without asking (see the Mechanical-Only list below).
+5. **Reference, never paraphrase.** All writing rules live in `../prompt-score/SKILL.md` (the canonical ruleset + evaluator). Read and apply them verbatim; do not restate them here.
+6. **The bar is 8.5.** A prompt is done when all 13 dimensions score ≥ 8.5 (PASS).
+
+### Mechanical-Only Fixes (safe to apply without asking)
+
+These are structural and carry no business decision, so apply them silently:
+- Adding the dedicated notes step before a terminal (M6).
+- Appending the " document" suffix and correcting a document name to its exact match in `../prompt-score/vesta-doc-types.md` **when the intended document is unambiguous**.
+- Rewriting a UI reference as a data lookup (R7) — e.g., `Use search_loan_data_model to get [field]`.
+- Converting field references to canonical action vocabulary / natural-language field names (R2).
+- Adding uppercase `STEP N:` labels and reformatting structure.
+
+Everything else — especially branch outcomes, escalation triggers/reasons, and terminal choices — **requires a clarifying question.**
+
+---
+
+## Sub-Agents Managed
+
+| Sub-Agent | Role | Skill |
+|-----------|------|-------|
+| Prompt Template | Scaffolds a guardrail-compliant skeleton prompt and saves it to `output-prompts/{task-name}.md`. | `../prompt-template/SKILL.md` |
+| Prompt Score | Canonical ruleset (R1–R7, M1–M6, action vocabulary, structure rules) **and** the evaluator. Produces one unified scorecard with a Status (PASS/WARN/FAIL) and a 0–10 Score per dimension, plus flagged issues. | `../prompt-score/SKILL.md` |
+| Objective Score | Audits every task in a Vesta objective folder. Calculates an Objective Health Score (OHS%) and writes an executive report. | `../objective-score/SKILL.md` |
+
+---
+
+## Assembly Lines
+
+| Line | Name | Pipeline |
+|------|------|----------|
+| A | Build | **Template** (optional) → **Evaluate** (unified score) → *fast path if already passing* → Merged questions (only if needed) → **Silent improve loop** → One final gate → Save |
+| B | Fix | Existing prompt → **Evaluate** (unified score) → *fast path if already passing* → Merged questions (only if needed) → **Silent improve loop** → One final gate → Save |
+| C | Audit | Objective name → **Objective Score** (all tasks) → Executive report |
+
+---
+
+## Question Formatting Rule
+
+**Always use numbered lists (1, 2, 3) when presenting options or questions to the user.** Never use bullet points or lettered lists (a, b, c) for any user-facing question or choice — anywhere in this skill or in any sub-skill invoked from this skill.
 
 ---
 
 ## On Invocation
 
-Ask the user:
+Present the following to the user:
 
-> Are you **creating a new prompt** from scratch, or **modifying an existing prompt**?
+> **Prompt Factory v2**
+> Which assembly line do you need?
+>
+> 1. **Build** · Create a new prompt from scratch
+> 2. **Fix** · Improve or repair an existing prompt
+> 3. **Audit** · Score all tasks in a Vesta objective and generate a report
 
 Then follow the matching branch below.
 
@@ -22,160 +72,125 @@ Then follow the matching branch below.
 
 ## Branch A — New Prompt
 
-### Step 1 — Collect the prompt
+### Step A1 — Draft or template?
 
-Ask the user to provide their complete prompt. They can:
+Ask the user:
 
-- Paste it inline in the chat, or
-- Provide a `.md` file path (read the file)
+> Do you have a prompt draft ready, or would you like me to generate a template first?
+> 1. **Draft ready** — paste it inline or provide a `.md` file path
+> 2. **Generate template** — I'll ask you a few questions and scaffold the structure
 
-### Step 2 — Run prompt-guardrails
+**If draft ready** → collect the prompt (paste or file path), then proceed to Step A2.
 
-Read and follow:
-`../prompt-guardrails/SKILL.md`
+**If generate template** → read and follow `../prompt-template/SKILL.md`. The template generator collects task details, scaffolds the structure, then **interviews the user step by step** to fill in every check condition, FAIL message, and terminal decision before handing back a complete, filled-in prompt. Return here and proceed to Step A2 using that filled-in file as input.
 
-Run the full guardrail audit on the collected prompt. Render the complete audit report (R1–R7, M1–M6 table + Violations section).
+### Step A2 — Evaluate once (silent)
 
-**Document name validation:** If any document is referenced in the prompt, read `../prompt-guardrails/vesta-doc-types.md` and verify that all document names match the exact names from the canonical list. Flag any mismatches in the audit report.
+Read and follow `../prompt-score/SKILL.md` and evaluate the collected prompt **internally** — do not render this first scorecard yet.
 
-### Step 3 — Ask clarifying questions
+While evaluating, also check document names against `../prompt-score/vesta-doc-types.md` and note any mismatches as flagged issues.
 
-Based on every FAIL and WARN in the audit report, ask the user targeted clarifying questions before rewriting. Combine all questions into one message. Examples:
+- **Fast path:** if all 13 dimensions are already PASS (≥ 8.5) → skip Steps A3–A4 and go straight to the **Final Gate**. Render the scorecard there with no "what changed" summary (nothing changed).
+- **Otherwise** → proceed to Step A3.
 
-- "Step 3 has an unhandled branch — what should the agent do if [condition] is not met?"
-- "Step 5 references a document but doesn't name it — which document should the agent review here?"
-- "The escalation is missing a reason — what reason should the agent state when escalating?"
-- "This step implies the agent will know what a prior task found — where should it look up this data directly?"
-- "You mentioned 'W-2' but the exact Vesta document name is '2024 W-2' — should I use the year-specific name or a generic reference?"
+### Step A3 — One batch of clarifying questions
+
+You **must** ask the user about every issue that carries a business decision (per principle 4). This always includes:
+
+- Any unhandled `IF` — ask what should happen for the missing case(s). If a conditional is missing both the positive and negative outcome, ask about both. Never infer or invent the outcome.
+- Any escalation — ask for the exact trigger condition and the reason to state.
+- Any terminal choice where intent is unclear — ask whether the path should `finish with status=completed`, escalate, or `Do not complete the task.`
+- Any unnamed or ambiguous document — ask which exact document from `../prompt-score/vesta-doc-types.md` is meant.
+
+Combine all of these into **one** numbered-list message. Examples:
+
+1. "Step 3 checks if the loan amount exceeds the limit but doesn't say what happens if it does — what should the agent do in that case?"
+2. "Step 4 has no instruction for when the condition is NOT met — what should happen on the negative branch?"
+3. "Step 5 references a document but doesn't name it — which exact document should the agent review here?"
+4. "The escalation in Step 6 has no reason — what trigger and reason should the agent state?"
+
+Only **Mechanical-Only Fixes** (see above) may be applied without asking. If — and only if — every remaining flagged issue is mechanical, skip this step and go to Step A4. If any issue carries a decision, you must ask.
 
 Wait for the user's full response before proceeding.
 
-### Step 4 — Build the improved prompt
+### Step A4 — Silent rewrite-and-improve loop
 
-Using the original prompt, the guardrail findings, and all clarifying answers from Step 3:
-
-1. Rewrite the prompt as fully detailed, step-by-step agent instructions
-2. Apply all rules from `prompt-guardrails` (R1–R7, M1–M6, action vocabulary, step structure):
-   - Every step must name the exact action, tool, field, or document
-   - Use natural language for field names (e.g., "Closing Date", "Borrower's Monthly Income")
-   - All document references must include " document" suffix and use exact names from `../prompt-guardrails/vesta-doc-types.md`
-   - Every IF must have a defined outcome for both branches
-   - Every path must end in `status=completed`, an explicit escalation, or `Do not complete the task.` (preceded by a note)
-   - Include a dedicated notes step immediately before every terminal
-   - Use canonical action vocabulary (Set, Write a note, Escalate, Review the, etc.)
-   - No vague language, no UI references, no cross-task references
-3. Label every step with uppercase headers (`STEP 1: ...`, `STEP 2: ...`)
-
-Present the rewritten prompt to the user, then ask:
-
-> Does this look correct? Reply **"confirm"** to proceed to scoring, or tell me what to change.
-
-Apply any requested changes, then wait for confirmation before scoring.
-
-### Step 5 — Score and save
-
-Once confirmed, read and follow:
-`../prompt-score/SKILL.md`
-
-Run `prompt-score` on the confirmed prompt. Render the full scorecard.
-
-Calculate: `average = total ÷ 13`
-
-- **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
-- **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
+Run the **Improvement Loop** (below) internally. Do not show intermediate scorecards. When it returns, go to the Final Gate.
 
 ---
 
 ## Branch B — Modify Existing Prompt
 
-### Step 1 — Collect the prompt
+### Step B1 — Collect the prompt
 
 Ask the user to either:
 
-- Paste the prompt inline, or
-- Provide a `.md` file path (read the file)
+1. Paste the prompt inline, or
+2. Provide a `.md` file path (read the file)
 
-### Step 2 — Run prompt-guardrails
+### Step B2 — Evaluate once (silent)
 
-Read and follow:
-`../prompt-guardrails/SKILL.md`
+Identical to **Step A2**: evaluate internally via `../prompt-score/SKILL.md`, check document names against `../prompt-score/vesta-doc-types.md`, fast-path to the Final Gate if all 13 are PASS, otherwise continue.
 
-Run the full guardrail audit on the prompt. Render the complete audit report.
+### Step B3 — One batch of clarifying questions
 
-**Document name validation:** If any document is referenced in the prompt, read `../prompt-guardrails/vesta-doc-types.md` and verify that all document names match the exact names from the canonical list. Flag any mismatches in the audit report.
+Identical to **Step A3** — one batched message that must ask the user about every branch outcome, escalation trigger/reason, terminal choice, and ambiguous document. Skip only if every remaining flagged issue is a Mechanical-Only Fix.
 
-### Step 3 — Ask clarifying questions
+### Step B4 — Silent rewrite-and-improve loop
 
-Based on every FAIL and WARN in the audit report, ask the user targeted clarifying questions before rewriting. Combine all questions into one message. Examples:
-
-- "Step 3 has an unhandled branch — what should the agent do if [condition] is not met?"
-- "Step 5 references a document but doesn't name it — which document should the agent review here?"
-- "The escalation is missing a reason — what reason should the agent state when escalating?"
-- "This step implies the agent will know what a prior task found — where should it look up this data directly?"
-- "You mentioned 'W-2' but the exact Vesta document name is '2024 W-2' — should I use the year-specific name or a generic reference?"
-
-Wait for the user's full response before proceeding.
-
-### Step 4 — Rewrite based on findings and answers
-
-Using the original prompt, the guardrail findings, and all clarifying answers from Step 3, apply fixes for all FAIL and WARN items:
-
-- Add missing escalation paths with explicit trigger conditions and reasons
-- Replace vague instructions with specific actions, fields, or documents
-- Use natural language for field names (e.g., "Closing Date", not "closing_date")
-- Ensure all document names match the exact names from `../prompt-guardrails/vesta-doc-types.md` and include " document" suffix
-- Handle all unhandled IF branches
-- Remove UI references — rewrite as data lookups
-- Name all documents explicitly
-- Ensure every path terminates in `status=completed`, an escalation, or `Do not complete the task.` (preceded by a note)
-- Add a dedicated notes step immediately before every terminal
-- Use canonical action vocabulary throughout
-
-Present the rewritten prompt to the user, then ask:
-
-> Does this look correct? Reply **"confirm"** to proceed to scoring, or tell me what to change.
-
-Apply any requested changes, then wait for confirmation before scoring.
-
-### Step 5 — Score and save
-
-Read and follow:
-`../prompt-score/SKILL.md`
-
-Run `prompt-score` on the rewritten prompt. Render the full scorecard.
-
-Calculate: `average = total ÷ 13`
-
-- **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
-- **If average ≤ 9.0** → enter the **Improvement Loop** below. This counts as attempt 1.
+Run the **Improvement Loop** (below) internally, then go to the Final Gate.
 
 ---
 
-## Improvement Loop
+## Branch C — Objective Score
 
-Track the attempt count. Maximum **3 attempts total** (including the first score run that triggered the loop).
+Read and follow: `../objective-score/SKILL.md`
+
+Delegate fully to that skill. Do not apply any improvements or fixes — this branch is read-only.
+
+---
+
+## Improvement Loop (internal)
+
+Runs silently. Maximum **3 attempts total** (including the first scored version that triggered the loop). Maintain a running **"what changed"** list of the concrete fixes applied across all attempts.
+
+Apply all writing rules from `../prompt-score/SKILL.md` verbatim — do not restate them. Label every step `STEP N: [UPPERCASE LABEL]`.
+
+**Never invent business logic in the loop.** For branch outcomes (R3), escalation triggers/reasons (R4, M3), and terminal choices (R6), apply only the decisions the user gave in Step A3/B3. If the loop surfaces a new unhandled branch or terminal that the user has not decided, **stop the loop and return to a clarifying question** — do not guess.
 
 ### Each iteration
 
-1. Review all flagged issues from the most recent `prompt-score` scorecard.
-2. Rewrite the prompt to address every flagged issue. Priority order:
-   - Unhandled branches (R3) — define the missing outcome for every IF
-   - Missing escalation paths (R4, M3) — add trigger + reason for every gap case
-   - Vague language (M2) — replace with specific field names (natural language), document names (exact from vesta-doc-types.md), or criteria
-   - Unnamed documents (M5) — use full document type names from `../prompt-guardrails/vesta-doc-types.md` with " document" suffix
-   - Missing notes step (M6) — add a dedicated notes step immediately before every terminal
-   - Dangling paths (R6) — every path must end in `status=completed`, an escalation, or `Do not complete the task.` preceded by a note
-   - UI references (R7) — rewrite as `Use search_loan_data_model to get [field]`
-3. Re-run `prompt-score` on the revised prompt. Render the updated scorecard.
-4. Calculate `average = total ÷ 13`.
-5. **If average > 9.0** → determine the save path using the **Save Path Rules** below, write the file, and confirm the path to the user. Done.
-6. **If average ≤ 9.0 and attempts < 3** → increment attempt count and repeat from step 1.
-7. **If average ≤ 9.0 and attempts = 3** → stop. Report:
+1. Review all flagged issues from the most recent (internal) `prompt-score` scorecard.
+2. Rewrite the prompt to address every flagged issue, and record each concrete fix in the "what changed" list. Apply the user's decisions for any branch, escalation, or terminal; apply Mechanical-Only Fixes directly. Priority order: unhandled branches (R3, using the user's stated outcome) → missing escalation paths (R4, M3, using the user's trigger + reason) → vague language (M2) → unnamed documents (M5, using exact names from `../prompt-score/vesta-doc-types.md`) → missing notes step (M6) → dangling paths (R6, using the user's stated terminal) → UI references (R7).
+3. Re-run `prompt-score` **internally** — do not render the scorecard.
+4. **If all 13 dimensions are PASS (≥ 8.5)** → exit the loop and return to the Final Gate.
+5. **If any dimension < 8.5 and attempts < 3** → increment the attempt count and repeat from step 1.
+6. **If any dimension < 8.5 and attempts = 3** → exit the loop and return to the Final Gate with the best version and the list of dimensions still below 8.5.
 
-> After 3 improvement attempts, the best score achieved was **X.X / 10**.
-> Would you like to **save this version anyway**, or provide additional guidance so I can keep improving it?
+---
 
-Do NOT save automatically — wait for the user's explicit decision.
+## Final Gate (single approval, then save)
+
+This is the only place Build and Fix surface results. Present, in one message:
+
+1. The **final prompt** in full.
+2. The **final unified scorecard** (the `prompt-score` table — Status + Score).
+3. A bulleted **"What changed"** summary of the concrete fixes applied (omit if the fast path fired and nothing changed).
+
+Then:
+
+- **If all 13 dimensions are PASS** → ask:
+
+> Reply **"confirm"** to save, or tell me what to change.
+
+- **If any dimension is still below 8.5 after 3 attempts** → ask:
+
+> After 3 improvement attempts, these dimensions are still below 8.5: **[list them]**.
+> Reply **"save anyway"** to save this version, or give me additional guidance and I'll keep improving it.
+
+On **confirm / save anyway** → determine the path via **Save Path Rules**, write the file, confirm the path. Done.
+
+On requested edits → apply them, re-score **silently**, and re-present this Final Gate. Never save without an explicit "confirm" / "save anyway".
 
 ---
 
@@ -199,5 +214,7 @@ Determine the output path before writing the file:
 
 ## Referenced Skills
 
-- Guardrails audit: `../prompt-guardrails/SKILL.md`
-- Scoring: `../prompt-score/SKILL.md`
+- Template scaffolding: `../prompt-template/SKILL.md`
+- Canonical ruleset + scoring: `../prompt-score/SKILL.md`
+- Document type names: `../prompt-score/vesta-doc-types.md`
+- Objective audit (explicit only): `../objective-score/SKILL.md`

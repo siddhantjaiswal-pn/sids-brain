@@ -73,7 +73,6 @@ Sids Brain/
     │   ├── Prompt Engineering Skills/
     │   │   ├── prompt-factory-v2/
     │   │   ├── prompt-score/
-    │   │   ├── prompt-guardrails/
     │   │   ├── overhaul-objective-prompts/
     │   │   ├── generate-agent-release-notes/
     │   │   └── _archived/
@@ -174,8 +173,7 @@ This workspace contains custom Cursor AI skills (`.cursor/skills/`) for common t
 | Skill | What it does | Use when |
 |---|---|---|
 | `prompt-factory-v2` | Orchestrates the full Vesta agent task prompt lifecycle: writes Checklist Steps, scores quality, rewrites to fix issues, and saves to output-prompts/ | "run prompt factory", "create a prompt", "generate a prompt for [task]", "score and rewrite this prompt" |
-| `prompt-score` | Scores a Vesta agent task prompt (.md file) across 12 dimensions with per-dimension rationale and flagged issues | "score this prompt", "grade this task", "rate my prompt", "evaluate this .md" |
-| `prompt-guardrails` | Validates a prompt file against 6 core principles and 5 common mistakes from the Vesta Agent Task Instruction Writing Guide | "prompt guardrails", "check guardrails", "audit this prompt", "check against the rules" |
+| `prompt-score` | Canonical Vesta prompt ruleset (R1–R7, M1–M6, action vocabulary) **and** the evaluator. Scores a prompt across 13 dimensions with a PASS/WARN/FAIL status and 0–10 score per dimension, plus flagged issues | "score this prompt", "grade this task", "rate my prompt", "prompt guardrails", "check guardrails", "audit this prompt", "check against the rules" |
 | `overhaul-objective-prompts` | Audits and rewrites all agent instruction tasks under a Vesta objective. Phase 1 scores every task; Phase 2 launches parallel subagents to rewrite all tasks to 9+ quality | "overhaul prompts for [objective]", "rewrite all tasks under [objective]", "score and fix [objective] prompts" |
 | `generate-agent-release-notes` | Generates release notes from Jira tickets for ServiceNow change documentation | "generate release notes", "create release notes", "document this release" |
 
@@ -198,9 +196,8 @@ This workspace contains custom Cursor AI skills (`.cursor/skills/`) for common t
 
 ### Engineering a Vesta Agent Task Prompt
 1. Use `prompt-factory-v2` to generate a complete prompt from a task description
-2. Use `prompt-score` to evaluate quality across 12 dimensions
-3. Use `prompt-guardrails` to validate against team standards
-4. Use `overhaul-objective-prompts` to audit and rewrite all tasks under an objective
+2. Use `prompt-score` to evaluate quality across 13 dimensions and validate against team standards (it is both the ruleset and the scorer)
+3. Use `overhaul-objective-prompts` to audit and rewrite all tasks under an objective
 
 ### Syncing Vesta Configuration
 1. Use `sync-vesta-config` to fetch the latest objectives and task definitions from the Vesta API
