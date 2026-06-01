@@ -13,3 +13,5 @@ decrypted-configs/
 
 # Encrypted configuration exports
 *.pve
+
+factory-output/*

@@ -1,12 +1,12 @@
 ---
 name: prompt-factory-v2
-description: Manager agent for the Vesta prompt lifecycle. Coordinates three sub-agents — Prompt Template Generator, Prompt Score (the canonical ruleset + evaluator), and Objective Score — across three assembly lines. Line A (Build): optional template scaffold → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line B (Fix): existing prompt → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line C (Audit): scores all tasks in a Vesta objective folder and writes an executive health report — read-only. Use when the user says "prompt factory", "prompt factory v2", "run prompt-factory-v2", "create a vesta prompt", "generate a prompt template", "improve this prompt", "fix this prompt", "score and fix my prompt", or "score this objective".
+description: Manager agent for the Vesta prompt lifecycle. Coordinates four sub-agents — Prompt Template Generator, Prompt Score (the canonical ruleset + evaluator), Objective Score, and Prompt QA — across four assembly lines. Line A (Build): optional template scaffold → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line B (Fix): existing prompt → unified evaluation → merged clarifying questions (only if needed) → silent rewrite-and-improve loop → one final gate → save. Line C (Audit): scores all tasks in a Vesta objective folder and writes an executive health report — read-only. Line D (QA): treats a single prompt as a decision tree, generates and statically traces test cases, measures logic coverage, and flags defects/gaps in a QA report — read-only, no live API calls. Use when the user says "prompt factory", "prompt factory v2", "run prompt-factory-v2", "create a vesta prompt", "generate a prompt template", "improve this prompt", "fix this prompt", "score and fix my prompt", "score this objective", "qa this prompt", or "test this prompt".
 disable-model-invocation: false
 ---
 
 # Prompt Factory v2
 
-Manager agent for the Vesta prompt lifecycle. Coordinates three specialist sub-agents and routes work through the correct assembly line based on what the user needs.
+Manager agent for the Vesta prompt lifecycle. Coordinates four specialist sub-agents and routes work through the correct assembly line based on what the user needs.
 
 **Design principles (read first):**
 1. **Evaluate once per version.** Use the unified `prompt-score` table (Status + Score) as the single evaluation. `prompt-score` is both the canonical ruleset and the evaluator — there is no separate guardrails skill.
@@ -33,9 +33,10 @@ Everything else — especially branch outcomes, escalation triggers/reasons, and
 
 | Sub-Agent | Role | Skill |
 |-----------|------|-------|
-| Prompt Template | Scaffolds a guardrail-compliant skeleton prompt and saves it to `output-prompts/{task-name}.md`. | `../prompt-template/SKILL.md` |
+| Prompt Template | Scaffolds a guardrail-compliant skeleton prompt and saves it to `factory-output/output-prompts/{task-name}.md`. | `../prompt-template/SKILL.md` |
 | Prompt Score | Canonical ruleset (R1–R7, M1–M6, action vocabulary, structure rules) **and** the evaluator. Produces one unified scorecard with a Status (PASS/WARN/FAIL) and a 0–10 Score per dimension, plus flagged issues. | `../prompt-score/SKILL.md` |
 | Objective Score | Audits every task in a Vesta objective folder. Calculates an Objective Health Score (OHS%) and writes an executive report. | `../objective-score/SKILL.md` |
+| Prompt QA | Read-only QA agent for a single prompt. Generates test scenarios/cases, statically traces them, measures coverage, and flags logic defects and gaps. Writes a QA report. | `../prompt-qa/SKILL.md` |
 
 ---
 
@@ -46,6 +47,7 @@ Everything else — especially branch outcomes, escalation triggers/reasons, and
 | A | Build | **Template** (optional) → **Evaluate** (unified score) → *fast path if already passing* → Merged questions (only if needed) → **Silent improve loop** → One final gate → Save |
 | B | Fix | Existing prompt → **Evaluate** (unified score) → *fast path if already passing* → Merged questions (only if needed) → **Silent improve loop** → One final gate → Save |
 | C | Audit | Objective name → **Objective Score** (all tasks) → Executive report |
+| D | QA | Single prompt → **Prompt QA** (static trace) → test cases + coverage + flagged defects → QA report (read-only) |
 
 ---
 
@@ -65,6 +67,7 @@ Present the following to the user:
 > 1. **Build** · Create a new prompt from scratch
 > 2. **Fix** · Improve or repair an existing prompt
 > 3. **Audit** · Score all tasks in a Vesta objective and generate a report
+> 4. **QA** · Generate and run test cases on a single prompt to measure logic coverage (read-only)
 
 Then follow the matching branch below.
 
@@ -150,6 +153,14 @@ Delegate fully to that skill. Do not apply any improvements or fixes — this br
 
 ---
 
+## Branch D — Prompt QA
+
+Read and follow: `../prompt-qa/SKILL.md`
+
+Delegate fully to that skill. It treats a single prompt as a decision tree, generates test cases, statically traces them (no live API calls), measures coverage, and writes a QA report to `factory-output/prompt-qa/`. This branch is **read-only** — it never edits the prompt. If the user wants the recommended fixes applied, route them to **Branch B (Fix)**.
+
+---
+
 ## Improvement Loop (internal)
 
 Runs silently. Maximum **3 attempts total** (including the first scored version that triggered the loop). Maintain a running **"what changed"** list of the concrete fixes applied across all attempts.
@@ -199,14 +210,14 @@ On requested edits → apply them, re-score **silently**, and re-present this Fi
 Determine the output path before writing the file:
 
 1. **File path was provided** → overwrite that exact file in place. Do not change the file name or location.
-2. **Prompt was pasted inline (no file path)** → save to `{parent-directory-of-this-skill}/output-prompts/{task-name}.md`, where the parent directory is the directory that contains the `.cursor/skills/` folder (i.e., never save inside `.cursor/`).
+2. **Prompt was pasted inline (no file path)** → save to `{parent-directory-of-this-skill}/factory-output/output-prompts/{task-name}.md`, where the parent directory is the directory that contains the `.cursor/skills/` folder (i.e., never save inside `.cursor/`).
 
 > **Never write any file inside a `.cursor/` directory.**
 
 | Property      | Value                                                                                                                       |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | File path provided | Overwrite the original file at its existing path                                                                   |
-| No file path  | Save to `output-prompts/{task-name}.md` in the workspace root (parent of `.cursor/`)                                       |
+| No file path  | Save to `factory-output/output-prompts/{task-name}.md` in the workspace root (parent of `.cursor/`)                        |
 | File name     | Task name slug from the prompt title (e.g., `closing-date-adjustment.md`) — only applies when no file path was provided    |
 | File contents | Final rewritten prompt only — no scorecard, no audit report                                                                 |
 
@@ -218,3 +229,4 @@ Determine the output path before writing the file:
 - Canonical ruleset + scoring: `../prompt-score/SKILL.md`
 - Document type names: `../prompt-score/vesta-doc-types.md`
 - Objective audit (explicit only): `../objective-score/SKILL.md`
+- Single-prompt QA (read-only, static trace): `../prompt-qa/SKILL.md`

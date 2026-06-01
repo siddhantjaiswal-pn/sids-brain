@@ -94,7 +94,7 @@ IF all findings were tracked as PASS:
 Determine the save path:
 
 ```
-output-prompts/{task-name-slug}.md
+factory-output/output-prompts/{task-name-slug}.md
 ```
 
 Where `{task-name-slug}` is the task name provided by the user, lowercased with spaces replaced by hyphens (e.g. "Closing Date Check" → `closing-date-check.md`).
@@ -131,9 +131,9 @@ Using the user's answers:
 
 1. Replace every `[specify criteria]`, `[condition is not met]`, `[condition is met]`, `[summarize the finding]`, `[reason]`, and the bracketed `[Escalate ... / Do not complete the task.]` choice with the user's exact decisions.
 2. Apply the structural rules from `../prompt-score/SKILL.md` (canonical ruleset) — do not invent any branch outcome, escalation, or terminal the user did not provide. If an answer is missing or ambiguous, ask a brief follow-up rather than guessing.
-3. Overwrite the file at `output-prompts/{task-name-slug}.md` with the filled-in prompt and confirm:
+3. Overwrite the file at `factory-output/output-prompts/{task-name-slug}.md` with the filled-in prompt and confirm:
 
-> Filled-in prompt saved to `output-prompts/{task-name-slug}.md`.
+> Filled-in prompt saved to `factory-output/output-prompts/{task-name-slug}.md`.
 
 ---
 
