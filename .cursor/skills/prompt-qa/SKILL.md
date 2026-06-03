@@ -16,6 +16,7 @@ Read-only QA agent for a **single** Vesta agent task prompt. It treats the promp
 5. **Reference, never paraphrase the writing rules.** Style/structure rules live in `../prompt-score/SKILL.md`. Prompt QA evaluates *logical completeness and correctness*, not writing style.
 6. **External actions can fail.** Treat every write/action step — `Set [field] to [value]`, `Order [service]`, `Run [integration]`, `Mark the [...] document as Accepted`, etc. — as **fallible**. The platform agent performs these externally, so they can fail at runtime (write failure, timeout, downstream error) even when the surrounding logic is correct. A branch that guards against a failed action (a post-action failure catch-all and the escalation it leads to) is a **correct safeguard, never "dead code"** — even when the preceding logical branches are exhaustive. Static trace cannot simulate an external failure, so classify such branches as *external-failure guards* (verified present) and exclude them from the logic-branch denominator rather than counting them as unreachable or missing.
 7. **Readable references.** Whenever you cite a branch anywhere in the report, describe it in plain language tied to its step — e.g., `STEP 4 · "adjusted = today & after cutoff"`. Never use opaque internal codes (e.g., "B4e") in user-facing output. You may use short internal IDs while reasoning, but they must not appear in the report.
+8. **Standardized output.** Every report MUST follow the **Report Template** exactly — the same sections, in the same order, with the same headings, the same table columns, and the same row order. Do not add, remove, rename, merge, or reorder sections or columns. Always include every fixed row, even when its value is `0` or `N/A`. Format every coverage metric the same way — `count/total (percent%)` with the percent rounded to a whole number. The goal is that two runs on different prompts produce reports that look identical in shape.
 
 ### Relationship to `prompt-score`
 
@@ -81,12 +82,15 @@ Per-case status:
 
 ### Step 6 — Measure coverage
 
-Compute and report:
+Compute each metric below. Always express it as `count/total (percent%)`, percent rounded to a whole number. These map one-to-one onto the fixed rows in the **Coverage at a Glance** table — report all of them every time, even when a value is `0`.
+
 - **Logic branch coverage** = logic branches exercised / total **logic** branches. Exclude external-failure guards from both numerator and denominator (per principle 6).
-- **External-failure guards** = report the count and confirm each has a correct terminal (e.g., "2 present and correct"). These are not part of the coverage percentage.
 - **Outcome coverage** = distinct terminals reached / total terminals defined.
 - **Input-class coverage** = input classes exercised / total classes (including "undetermined").
 - **Boundary coverage** = boundary cases that resolve to a single defined outcome / total boundary cases.
+- **External-failure guards** = report the count and confirm each has a correct terminal (e.g., "2 present and correct"). These are not a percentage and are excluded from logic branch coverage.
+
+Also tally the per-case status counts (Passed / Gaps / Ambiguous / Action-failure guards) from Step 5 — these populate the scorecard rows.
 
 ### Step 7 — Detect defects
 
@@ -127,12 +131,14 @@ Do not modify the prompt under test. If the user wants the recommendations appli
 
 ## Report Template
 
+Reproduce this template **exactly** (per principle 8): same sections, same order, same headings, same table columns, same row order. Fill in the `{...}` placeholders only — never alter the surrounding labels, column headers, or the "What this measures" text. Keep every fixed row even when its value is `0` or `N/A`.
+
 ```markdown
 # Prompt QA Report: {Task Display Name}
 
 **Prompt:** `{relative path to prompt}`
 **Generated:** {YYYY-MM-DD}
-**Logic Branch Coverage:** {covered}/{total} ({X}%) | **Outcome Coverage:** {X}% | **Defects:** {High}/{Med}/{Low} (H/M/L)
+**Logic Branch Coverage:** {covered}/{total} ({X}%) | **Outcome Coverage:** {covered}/{total} ({X}%) | **Defects:** {High}/{Med}/{Low} (H/M/L)
 *(+{n} external-action failure guards present and correct — not exercisable by static trace.)*
 
 ---
@@ -145,17 +151,28 @@ Do not modify the prompt under test. If the user wants the recommendations appli
 
 ## Coverage at a Glance
 
-| Metric | Value |
-|--------|-------|
-| Test cases generated | {N} |
-| Cases PASS / GAP / AMBIGUOUS / GUARD | {a} / {b} / {c} / {d} |
-| Logic branch coverage | {covered}/{total} ({X}%) |
-| External-failure guards | {n} present and correct (not statically exercisable) |
-| Outcome coverage | {covered}/{total} ({X}%) |
-| Input-class coverage | {covered}/{total} ({X}%) |
-| Boundary coverage | {covered}/{total} ({X}%) |
+**Bottom line:** {one plain-language sentence — how complete and correct the prompt's logic is, and whether anything needs attention.}
 
-> If any branch is an external-failure guard, add a one-line note here explaining that the platform agent's action step can fail at runtime, so the guard is correct and is excluded from the logic-branch denominator rather than counted as missing.
+**How the test cases turned out:**
+
+| Result | Count | What this means |
+|--------|-------|-----------------|
+| Cases tested | {N} | Total scenarios traced through the prompt's logic |
+| Passed | {a} | Reached one clear, correct outcome |
+| Gaps | {b} | Hit a situation the prompt doesn't define an answer for |
+| Ambiguous | {c} | Could reach more than one outcome — the prompt isn't decisive |
+| Action-failure guards | {d} | Probed a write/action failure (see note below) |
+
+**How much of the prompt the tests covered:**
+
+| Coverage | Score | What this measures |
+|----------|-------|--------------------|
+| Decision branches | {covered}/{total} ({X}%) | Of every IF / IF NOT path, how many a test exercised |
+| Outcomes | {covered}/{total} ({X}%) | Of every possible ending (complete / escalate / etc.), how many were reached |
+| Input types | {covered}/{total} ({X}%) | Of every input value-class (including "unavailable"), how many were tested |
+| Edge cases | {covered}/{total} ({X}%) | Of every threshold/boundary value, how many resolved to one clear outcome |
+
+**Action-failure guards:** {n} present and correct (a write/action the platform performs externally can fail at runtime; a correct guard is not testable by static trace and is excluded from the decision-branch score above — it is not a missing branch). *If a guard is missing instead of present, say so here and note it is counted as a defect below.*
 
 ---
 
