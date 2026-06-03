@@ -39,6 +39,8 @@ Collect all of the following in a single ask (batch your questions):
 5. **Sprint** — only ask if user brings it up.
 6. **Story Points** — auto-calculated from action item count (see Story Points Rule below). Only override if the user explicitly provides a value.
 
+**Bug-only — Pennymac or Vesta?**: When the ticket type is Bug, always ask the user whether the bug is for **Pennymac** or **Vesta** before proceeding. Include this in the same single-ask batch as the other questions. Use the answer to set the Responsible Party field (`customfield_10104`) — `Pennymac` maps to `{"value": "Pennymac", "id": "10132"}`; if the user says Vesta, look up the correct option ID via `getJiraIssueTypeMetaWithFields` before creating the ticket.
+
 **Polish all user input** before writing to Jira: rewrite into clear, professional language at an easy-to-medium reading level. Do not confirm the polished version unless meaning is ambiguous.
 
 ### Story Points Rule (Stories only)
@@ -222,10 +224,11 @@ Call `getJiraIssue` to retrieve:
 
 - **Existing action items** — parse from the current description's Action Items list
 - **New action items** — the items the user just provided, polished
-- **All action items** = existing + new (combined, in order)
+- **All action items** = existing + new (combined, in order); when removing items, all action items = remaining items after removal, renumbered
 - **Next AC number** — highest existing AC-N + 1
+- **Recalculated story points** — apply the Story Points Rule table to the **total** action item count after the operation (add or remove). If the new count is 5+, ask the user before proceeding.
 
-### Step C: Write two updates in parallel
+### Step C: Write three updates in parallel
 
 **Description update** (`editJiraIssue` → `description`):
 
@@ -239,6 +242,12 @@ Call `getJiraIssue` to retrieve:
 - New ACs are numbered starting from the next AC number (e.g. if existing has AC-1 through AC-3, new ones start at AC-4)
 - Preserve all existing AC content exactly as-is
 - Add a `rule` divider before each new AC (including before the first new one, since it follows existing content)
+- When items are **removed**, rewrite the full AC field with only the remaining ACs renumbered from AC-1
+
+**Story Points update** (`editJiraIssue` → `customfield_10032`):
+
+- Set to the recalculated value from Step B
+- Always include in the same parallel batch as the other two updates
 
 ### Step D: Report result
 
@@ -253,6 +262,8 @@ Call `getJiraIssue` to retrieve:
    Acceptance Criteria appended:
    - AC-[N] through AC-[M] added ([N new] new ACs)
    - Existing AC-1 through AC-[N-1] unchanged
+
+   Story Points updated: [old value] → [new value]
 ```
 
 ## Step 5: Report Result
