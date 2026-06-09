@@ -1,37 +1,69 @@
 ---
 name: sync-vesta-config
 description: >
-  Syncs a Vesta objective into the knowledge base from a config.json file the user has already
-  placed in Vesta/config/objectives/. Never makes API calls — reads config.json, derives the
-  objective folder name from the config, and writes all task .md files.
+  Syncs a Vesta objective into the knowledge base from a config.json file. On first run, creates
+  the Vesta/config/objectives/ folder and a blank config.json so the user knows exactly where to
+  paste their export. On subsequent runs, reads config.json, derives the objective folder name,
+  and writes all task .md files. Never makes API calls.
   Use when the user says "sync Vesta config", "sync objective", "process this objective",
   "process the config", "create the files", or names an objective folder.
 ---
 
 # Sync Vesta Config Knowledge Base
 
-Writes objective task files from a `config.json` the user has already placed in the objective folder.
+Scaffolds the folder structure and writes objective task files from a `config.json`.
 
-**No API calls are ever made.** The user creates the folder and drops the JSON file in it.
+**No API calls are ever made.** On first run the skill creates the folder and a blank `config.json`
+so the user knows exactly where to paste their export. On re-run it processes the config and writes
+all task files.
 
 ---
 
 ## Workflow
 
-### Step 1: Confirm the config file is in place
+### Step 1: Scaffold the folder and config file (if not already in place)
 
-The user will have already dropped `config.json` directly into:
+Run this first to create the folder structure and a blank `config.json` if they don't exist yet:
 
+```bash
+cd "/Users/sijaiswal/Sids Brain" && python3 -c "
+import json
+from pathlib import Path
+
+objectives_dir = Path('Vesta/config/objectives')
+config_path = objectives_dir / 'config.json'
+
+objectives_dir.mkdir(parents=True, exist_ok=True)
+
+if not config_path.exists():
+    config_path.write_text('{}', encoding='utf-8')
+    print('Scaffold created.')
+    print(f'  Folder : {objectives_dir}')
+    print(f'  Config : {config_path}')
+    print()
+    print('Next step: paste your exported Vesta objective JSON into:')
+    print(f'  {config_path}')
+    print('Then re-run the skill to process it.')
+else:
+    try:
+        obj = json.loads(config_path.read_text(encoding='utf-8'))
+        if not obj or not obj.get('name'):
+            print('config.json exists but appears empty or missing required fields.')
+            print('Please paste your exported Vesta objective JSON into:')
+            print(f'  {config_path}')
+            print('Then re-run the skill to process it.')
+        else:
+            print(f'config.json already in place (objective: {obj[\"name\"]}). Proceeding to process.')
+    except json.JSONDecodeError:
+        print('config.json exists but contains invalid JSON. Please check the file and try again.')
+"
 ```
-Vesta/config/objectives/config.json
-```
 
-The script reads the objective name from inside the config and creates (or updates) the correct
-subfolder automatically — no need to ask the user for a folder name.
+If the scaffold was just created, **stop here** — paste the exported Vesta config JSON into `Vesta/config/objectives/config.json`, then re-run the skill.
 
 ### Step 2: Process the config and write task files
 
-Run:
+Run once `config.json` is populated:
 
 ```bash
 cd "/Users/sijaiswal/Sids Brain" && python3 -c "
@@ -101,7 +133,7 @@ After the script completes, tell the user:
 
 ```
 Vesta/config/objectives/
-  config.json                 ← user drops this file here before running the skill
+  config.json                 ← created blank by Step 1 if missing; user fills it in before Step 2
   {objective-slug}/
     README.md                 ← written by this skill
     tasks/
@@ -111,7 +143,8 @@ Vesta/config/objectives/
 
 ## Notes
 
-- The `config.json` file is **never modified** — it is read-only input.
+- **Step 1 is safe to run at any time** — it only creates the folder and a blank `config.json` if they don't already exist. It never overwrites an existing `config.json`.
+- The `config.json` file is **never modified** by Step 2 — it is read-only input.
 - The objective subfolder name is derived automatically from `externalIdentifier` in the config (camelCase → kebab-case).
 - Existing `README.md` and task files in the objective directory are overwritten on re-sync.
 - Instructions task files contain only the raw checklist step text — no heading or numbered prefix.
