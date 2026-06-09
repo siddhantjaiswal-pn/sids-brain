@@ -59,15 +59,22 @@ tasks_dir = obj_dir / 'tasks'
 obj_dir.mkdir(parents=True, exist_ok=True)
 tasks_dir.mkdir(parents=True, exist_ok=True)
 
-all_tasks_map = {t['id']: t for t in obj.get('taskTemplates', [])}
+all_tasks = obj.get('taskTemplates', [])
+all_tasks_map = {t['id']: t for t in all_tasks}
+
+id_to_filename = {}
+for i, t in enumerate(all_tasks, 1):
+    t_ext_id = t.get('externalIdentifier') or mod.to_kebab(t['name'])
+    id_to_filename[t['id']] = f\"{i:02d}-{mod.to_kebab(t_ext_id)}\"
+
 rows = []
-for t in obj.get('taskTemplates', []):
-    s = mod.write_task_file(t, tasks_dir, all_tasks_map)
+for i, t in enumerate(all_tasks, 1):
+    s = mod.write_task_file(t, tasks_dir, all_tasks_map, idx=i, id_to_filename=id_to_filename)
     rows.append((t['name'], t['taskTemplateType'], t.get('entityType',''), t.get('triggerMethod',''), '—', '—', s))
 
 auto_rows = []
-for a in obj.get('automatedActionTemplates', []):
-    s = mod.write_automated_action_slug(a, tasks_dir)
+for i, a in enumerate(obj.get('automatedActionTemplates', []), 1):
+    s = mod.write_automated_action_slug(a, tasks_dir, idx=i)
     auto_rows.append((a['name'], a.get('entityType',''), a.get('actionType',''), s))
 
 mod.write_objective_readme(obj, obj_dir, rows, auto_rows)
@@ -98,8 +105,8 @@ Vesta/config/objectives/
   {objective-slug}/
     README.md                 ← written by this skill
     tasks/
-      {task-slug}.md          ← written by this skill
-      {action-slug}.md        ← written by this skill (AutomatedAction tasks)
+      {NN}-{task-slug}.md     ← written by this skill (NN = 1-based position in config)
+      {NN}-{action-slug}.md   ← written by this skill (AutomatedAction tasks)
 ```
 
 ## Notes

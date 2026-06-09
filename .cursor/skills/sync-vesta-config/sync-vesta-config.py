@@ -251,7 +251,9 @@ def write_document_required_task(task: dict, path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def write_manual_document_request_task(task: dict, path: Path, all_tasks_map: dict) -> None:
+def write_manual_document_request_task(
+    task: dict, path: Path, all_tasks_map: dict, id_to_filename: Optional[dict] = None
+) -> None:
     entity = task.get("entityType", "")
     instruction_obj = task.get("instruction") or {}
     instruction_text = instruction_obj.get("instruction", "")
@@ -268,7 +270,13 @@ def write_manual_document_request_task(task: dict, path: Path, all_tasks_map: di
         links = []
         for lid in linked_ids:
             linked_task = all_tasks_map.get(lid)
-            if linked_task:
+            if id_to_filename and lid in id_to_filename:
+                filename = id_to_filename[lid]
+                if linked_task:
+                    links.append(f"[{linked_task['name']}]({filename}.md)")
+                else:
+                    links.append(f"`{lid}`")
+            elif linked_task:
                 linked_ext = linked_task.get("externalIdentifier") or to_kebab(linked_task["name"])
                 linked_slug = to_kebab(linked_ext)
                 links.append(f"[{linked_task['name']}]({linked_slug}.md)")
@@ -351,11 +359,12 @@ def write_automated_action_file(action: dict, path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def write_automated_action_slug(action: dict, tasks_dir: Path) -> str:
-    """Write an automated action .md file and return its slug."""
+def write_automated_action_slug(action: dict, tasks_dir: Path, idx: int = 0) -> str:
+    """Write an automated action .md file and return its stem (with optional numeric prefix)."""
     slug = to_kebab(action["name"])
-    write_automated_action_file(action, tasks_dir / f"{slug}.md")
-    return slug
+    stem = f"{idx:02d}-{slug}" if idx else slug
+    write_automated_action_file(action, tasks_dir / f"{stem}.md")
+    return stem
 
 
 TASK_WRITERS = {
@@ -367,21 +376,28 @@ TASK_WRITERS = {
 }
 
 
-def write_task_file(task: dict, tasks_dir: Path, all_tasks_map: dict) -> str:
-    """Write a single task .md file and return its slug."""
+def write_task_file(
+    task: dict,
+    tasks_dir: Path,
+    all_tasks_map: dict,
+    idx: int = 0,
+    id_to_filename: Optional[dict] = None,
+) -> str:
+    """Write a single task .md file and return its stem (with optional numeric prefix)."""
     ext_id = task.get("externalIdentifier") or to_kebab(task["name"])
     slug = to_kebab(ext_id)
-    out_path = tasks_dir / f"{slug}.md"
+    stem = f"{idx:02d}-{slug}" if idx else slug
+    out_path = tasks_dir / f"{stem}.md"
 
     task_type = task.get("taskTemplateType", "")
     writer = TASK_WRITERS.get(task_type, write_unknown_task)
 
     if task_type == "ManualDocumentRequest":
-        writer(task, out_path, all_tasks_map)
+        writer(task, out_path, all_tasks_map, id_to_filename=id_to_filename)
     else:
         writer(task, out_path)
 
-    return slug
+    return stem
 
 
 # ---------------------------------------------------------------------------
@@ -692,25 +708,32 @@ def sync_details(list_items: list, force: bool = False) -> None:
         obj_dir.mkdir(parents=True, exist_ok=True)
         tasks_dir.mkdir(parents=True, exist_ok=True)
 
-        all_tasks_map = {t["id"]: t for t in data.get("taskTemplates", [])}
+        all_tasks = data.get("taskTemplates", [])
+        all_tasks_map = {t["id"]: t for t in all_tasks}
+
+        # Pre-build id → numbered filename map for cross-references (e.g. ManualDocumentRequest links)
+        id_to_filename = {}
+        for i, t in enumerate(all_tasks, 1):
+            t_ext_id = t.get("externalIdentifier") or to_kebab(t["name"])
+            id_to_filename[t["id"]] = f"{i:02d}-{to_kebab(t_ext_id)}"
 
         task_rows = []
-        for task in data.get("taskTemplates", []):
-            t_slug = write_task_file(task, tasks_dir, all_tasks_map)
+        for i, task in enumerate(all_tasks, 1):
+            t_stem = write_task_file(task, tasks_dir, all_tasks_map, idx=i, id_to_filename=id_to_filename)
             t_type = task["taskTemplateType"]
             t_entity = task.get("entityType", "")
             t_trigger = task.get("triggerMethod", "—")
             t_auto = "yes" if task.get("autoCompleteTask") else ("—" if "autoCompleteTask" not in task else "no")
             t_ai = "yes" if task.get("aiAgentEnabled") else ("—" if "aiAgentEnabled" not in task else "no")
-            task_rows.append((task["name"], t_type, t_entity, t_trigger, t_auto, t_ai, t_slug))
+            task_rows.append((task["name"], t_type, t_entity, t_trigger, t_auto, t_ai, t_stem))
             total_tasks += 1
 
         automated_action_rows = []
-        for action in data.get("automatedActionTemplates", []):
-            a_slug = write_automated_action_slug(action, tasks_dir)
+        for i, action in enumerate(data.get("automatedActionTemplates", []), 1):
+            a_stem = write_automated_action_slug(action, tasks_dir, idx=i)
             a_entity = action.get("entityType", "")
             a_type = action.get("actionType", "")
-            automated_action_rows.append((action["name"], a_entity, a_type, a_slug))
+            automated_action_rows.append((action["name"], a_entity, a_type, a_stem))
             total_automated_actions += 1
 
         write_objective_readme(data, obj_dir, task_rows, automated_action_rows)
