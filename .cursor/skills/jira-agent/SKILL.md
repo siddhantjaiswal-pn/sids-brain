@@ -11,6 +11,57 @@ Focused workflow for creating a new HIS project ticket as a child of an Epic.
 
 ---
 
+## Step 0: Identity Check (run once ever — skip silently if already saved)
+
+This skill is shared. The current user's Jira identity is resolved once and saved permanently to [`user-config.json`](user-config.json) in this skill's directory. Once saved, never prompt for identity again — just load and use it.
+
+### 0-A: Check for saved config
+
+Read `user-config.json`. If it contains a non-empty `accountId` field, load the values silently and proceed directly to Step 1 — **no confirmation, no prompts**:
+
+```json
+{
+  "accountId":   "<jira-account-id>",
+  "displayName": "<Full Name>",
+  "email":       "<email@example.com>",
+  "initials":    "<XX>"
+}
+```
+
+Use these values wherever the skill references `<user.accountId>`, `<user.displayName>`, `<user.email>`, and `<user.initials>` below.
+
+### 0-B: No saved config — auto-detect via Atlassian
+
+If `user-config.json` is empty or missing `accountId`, call `atlassianUserInfo` (no arguments). This returns the currently authenticated Atlassian user.
+
+- If the response includes an `accountId` and `name`/`displayName`, derive initials from the first letter of each word in the display name (e.g. "Jane Doe" → "JD"), write the result to `user-config.json`, and proceed. This is a one-time write — the file will be used directly on all future invocations with no further prompts.
+- If `atlassianUserInfo` fails or returns insufficient data, fall through to 0-C.
+
+### 0-C: Fallback — ask for email
+
+If `atlassianUserInfo` fails or the user rejects the auto-detected identity:
+
+1. Ask: "What is your Pennymac Atlassian email address?"
+2. Call `lookupJiraAccountId(cloudId: "horizonpennymac.atlassian.net", searchString: "<email>")`.
+3. Show the matched user(s) and ask the user to confirm the correct one.
+4. Derive initials from the display name (first letter of each word).
+5. Write the confirmed values to `user-config.json`.
+
+### 0-D: Apply user values
+
+Throughout this skill, substitute:
+
+| Placeholder           | Value from user-config.json       |
+| --------------------- | --------------------------------- |
+| `<user.accountId>`    | `accountId`                       |
+| `<user.displayName>`  | `displayName`                     |
+| `<user.email>`        | `email`                           |
+| `<user.initials>`     | `initials`                        |
+
+Do **not** use any hardcoded account ID or name from a previous user.
+
+---
+
 ## Domain Context
 
 Before writing any ticket content, read [`admin-config.md`](admin-config.md) in this skill's directory. It describes the Vesta Loan Origination System — Objectives, Tasks, Automated Actions, Validations, Loan Stages, and related concepts.
@@ -36,8 +87,7 @@ Collect all of the following in a single ask (batch your questions):
 2. **Ticket type** — Story or Bug? Always ask explicitly, never assume.
 3. **Summary** — concise title.
 4. **Description** — what the ticket is about (raw input is fine, polish it before writing).
-5. **Sprint** — only ask if user brings it up.
-6. **Story Points** — auto-calculated from action item count (see Story Points Rule below). Only override if the user explicitly provides a value.
+5. **Story Points** — auto-calculated from action item count (see Story Points Rule below). Only override if the user explicitly provides a value.
 
 **Bug-only — Pennymac or Vesta?**: When the ticket type is Bug, always ask the user whether the bug is for **Pennymac** or **Vesta** before proceeding. Include this in the same single-ask batch as the other questions. Use the answer to set the Responsible Party field (`customfield_10104`) — `Pennymac` maps to `{"value": "Pennymac", "id": "10132"}`; if the user says Vesta, look up the correct option ID via `getJiraIssueTypeMetaWithFields` before creating the ticket.
 
@@ -47,12 +97,12 @@ Collect all of the following in a single ask (batch your questions):
 
 Auto-calculate story points from the number of action items provided:
 
-| Action Items | Story Points |
-| ------------ | ------------ |
-| 1 (and description looks straightforward) | 2 |
-| 2 | 3 |
-| 3–4 | 5 |
-| 5+ | **Ask the user** — do not proceed until confirmed |
+| Action Items                              | Story Points                                      |
+| ----------------------------------------- | ------------------------------------------------- |
+| 1 (and description looks straightforward) | 2                                                 |
+| 2                                         | 3                                                 |
+| 3–4                                       | 5                                                 |
+| 5+                                        | **Ask the user** — do not proceed until confirmed |
 
 Always include `customfield_10032` in `additional_fields` when creating a Story. If the user explicitly provides a story point value, use that instead.
 
@@ -62,14 +112,13 @@ Show a preview and wait for explicit confirmation:
 
 ```
 Ticket to create:
-  Project:      [HIS / BTX / …]
+  Project:      [BTX / …]
   Type:         Story
   Parent Epic:  [Epic title]
   Summary:      [polished summary]
   Description:  [first 200 chars of polished description…]
   [Project-specific required fields at their defaults]
-  Assignee:     Siddhant Jaiswal
-  Sprint:       Not set
+  Assignee:     <user.displayName>
   Story Points: [auto-calculated value, or "Pending — confirm with user" if 5+ action items]
 ```
 
@@ -91,7 +140,7 @@ createJiraIssue(
   summary            = "<polished>",
   description        = "<polished>",
   parent             = "HIS-498",
-  assignee_account_id = "712020:4ddaaf98-60fb-4b88-8366-1ccb9c511a27",
+  assignee_account_id = "<user.accountId>",
   additional_fields  = {
     "customfield_10035": [{"value": "CDL", "id": "10022"}],
     "customfield_10036": {"value": "Horizon Internal Services", "id": "10024"},
@@ -111,7 +160,7 @@ createJiraIssue(
   summary            = "<polished>",
   description        = "<polished>",
   parent             = "BTX-1",
-  assignee_account_id = "712020:4ddaaf98-60fb-4b88-8366-1ccb9c511a27",
+  assignee_account_id = "<user.accountId>",
   additional_fields  = {
     "customfield_10104": [{"value": "Pennymac", "id": "10132"}],
     "customfield_10036": {"value": "AI: Agent Implementation", "id": "10770"},
@@ -129,12 +178,11 @@ BTX required fields reference:
 | Work-Stream       | `customfield_10036` | `AI: Agent Implementation` | `10770`    |
 | Teams             | `customfield_10037` | `BT Core`                  | `10803`    |
 
-Add to `additional_fields` for Stories (Story Points always included; Sprint only when user specifies):
+Add to `additional_fields` for Stories:
 
-| Field        | Field ID            | Format                  | When to include |
-| ------------ | ------------------- | ----------------------- | --------------- |
-| Story Points | `customfield_10032` | `<number>`              | Always for Stories — use auto-calculated value |
-| Sprint       | `customfield_10020` | `{"id": "<sprint_id>"}` | Only when user specifies |
+| Field        | Field ID            | Format     | When to include                                |
+| ------------ | ------------------- | ---------- | ---------------------------------------------- |
+| Story Points | `customfield_10032` | `<number>` | Always for Stories — use auto-calculated value |
 
 ## Step 4: Apply Description Template
 
@@ -147,7 +195,7 @@ Three panels in description — see [templates/story-adf.md](templates/story-adf
 Structure:
 
 1. Purple `note` panel → **Summary** heading + paragraph with a synthesized summary (see below)
-2. Purple `note` panel → **Process Version to be merged to Release Candidate** heading + paragraph with `SJ-<TICKET_ID>-01`
+2. Purple `note` panel → **Process Version to be merged to Release Candidate** heading + paragraph with `<user.initials>-<TICKET_ID>-01`
 3. Blue `info` panel → **Action Items** heading + numbered list of all polished action items provided by the user
 
 **Summary paragraph rule**: Do NOT use the raw description. Instead, read all action items the user provided and write a single synthesized sentence (or two at most) that captures the full scope of the work. Example: if the action items are (1) suppress objective when Escalated, (2) adjust Funds Ordered Date for non-business days, (3) verify Exhibit A is not blank — the summary would be: "Enhance the Agent Funding Review objective with Escalated status suppression, non-business day Funds Ordered Date handling, and Exhibit A Security Instrument blank verification."
@@ -156,8 +204,8 @@ Structure:
 
 Then update `customfield_10058` (Acceptance Criteria) — write numbered Gherkin ACs derived from the action items (see Acceptance Criteria rule below). See [templates/story-adf.md](templates/story-adf.md).
 
-**Process Version format**: `SJ-<TICKET_ID>-<ITERATION>` — always start with `01` for new tickets.
-Example: ticket `HIS-9000` → `SJ-HIS-9000-01`
+**Process Version format**: `<user.initials>-<TICKET_ID>-<ITERATION>` — always start with `01` for new tickets.
+Example: if user initials are `JD` and ticket is `HIS-9000` → `JD-HIS-9000-01`
 
 ### Bug Description Template
 
@@ -277,12 +325,12 @@ Call `getJiraIssue` to retrieve:
 
    Fields Set:
    - Channel: CDL | Work-Stream: Horizon Internal Services | Teams: Eligibles
-   - Assignee: Siddhant Jaiswal
+   - Assignee: <user.displayName>
    - Story Points: [N]
 
    Template Applied:
    - Summary section (synthesized from action items)
-   - Process Version: SJ-HIS-9001-01
+   - Process Version: <user.initials>-HIS-9001-01
    - Action Items ([N] items written)
    - Acceptance Criteria ([N] ACs written — AC-1 through AC-N)
 ```
